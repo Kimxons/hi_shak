@@ -2,8 +2,9 @@ import { useRouter } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
 import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 
+import { ScreenShell } from '@/components/screen-shell';
 import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
+import { Layout } from '@/constants/theme';
 import { useAuth } from '@/contexts/auth-context';
 
 export default function VerifyTwoFactorScreen() {
@@ -45,19 +46,27 @@ export default function VerifyTwoFactorScreen() {
   }
 
   return (
-    <ThemedView style={styles.container}>
-      <ThemedText type="title">Two-factor verification</ThemedText>
-      <ThemedText style={styles.description}>
-        Enter the 6-digit code from your authenticator app
-        {pendingTwoFactorEmail ? ` for ${pendingTwoFactorEmail}` : ''}. You can also use a recovery code.
-      </ThemedText>
+    <ScreenShell
+      keyboardAware
+      keyboardShouldPersistTaps="always"
+      contentContainerStyle={styles.content}
+      maxWidth={560}>
+      <View style={styles.hero}>
+        <ThemedText type="title">Two-factor verification</ThemedText>
+        <ThemedText style={styles.description}>
+          Enter the 6-digit code from your authenticator app
+          {pendingTwoFactorEmail ? ` for ${pendingTwoFactorEmail}` : ''}. You can also use a recovery code.
+        </ThemedText>
+      </View>
 
-      <View style={styles.form}>
+      <View style={styles.formCard}>
+        <ThemedText type="defaultSemiBold">Security checkpoint</ThemedText>
         <TextInput
           autoCapitalize="characters"
           autoCorrect={false}
+          returnKeyType="done"
           placeholder="123456 or ABCD-EFGH"
-          placeholderTextColor="#7E8A96"
+          placeholderTextColor="#82958D"
           style={styles.input}
           value={code}
           onChangeText={setCode}
@@ -66,62 +75,93 @@ export default function VerifyTwoFactorScreen() {
         {submitError ? <ThemedText style={styles.errorText}>{submitError}</ThemedText> : null}
 
         <Pressable
-          style={[styles.button, !canSubmit && styles.buttonDisabled]}
+          style={({ pressed }) => [
+            styles.button,
+            !canSubmit && styles.buttonDisabled,
+            pressed && canSubmit && styles.buttonPressed,
+          ]}
           disabled={!canSubmit}
           onPress={handleVerify}>
           <ThemedText style={styles.buttonText}>{isSubmitting ? 'Verifying...' : 'Verify and Continue'}</ThemedText>
         </Pressable>
       </View>
 
-      <Pressable onPress={handleBackToSignIn}>
-        <ThemedText type="link">Use another account</ThemedText>
-      </Pressable>
-    </ThemedView>
+      <View style={styles.footer}>
+        <ThemedText style={styles.footerText}>Need to switch account?</ThemedText>
+        <Pressable onPress={handleBackToSignIn}>
+          <ThemedText type="link">Use another account</ThemedText>
+        </Pressable>
+      </View>
+    </ScreenShell>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
+  content: {
+    flexGrow: 1,
     justifyContent: 'center',
-    paddingHorizontal: 24,
-    gap: 12,
+    gap: 18,
+  },
+  hero: {
+    gap: 10,
   },
   description: {
     fontSize: 16,
     lineHeight: 24,
+    color: '#50635B',
   },
-  form: {
-    gap: 12,
-    marginTop: 8,
+  formCard: {
+    borderRadius: Layout.radius.lg,
+    borderWidth: 1,
+    borderColor: '#D0E2D9',
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 18,
+    paddingVertical: 18,
+    gap: 10,
+    ...Layout.shadow.card,
   },
   input: {
     borderWidth: 1,
-    borderColor: '#D3DAE1',
-    borderRadius: 10,
+    borderColor: '#C5DCD1',
+    borderRadius: 12,
     paddingHorizontal: 14,
     paddingVertical: 12,
     fontSize: 16,
-    color: '#11181C',
+    color: '#0F201A',
     backgroundColor: '#FFFFFF',
+    marginTop: 4,
   },
   button: {
-    backgroundColor: '#0A7EA4',
-    borderRadius: 10,
-    paddingVertical: 12,
+    backgroundColor: '#0B8A73',
+    borderRadius: 12,
+    paddingVertical: 13,
     alignItems: 'center',
+    minHeight: 50,
+    justifyContent: 'center',
     marginTop: 6,
   },
+  buttonPressed: {
+    transform: [{ scale: 0.985 }],
+  },
   buttonDisabled: {
-    opacity: 0.45,
+    opacity: 0.48,
   },
   buttonText: {
     color: '#FFFFFF',
     fontWeight: '600',
   },
   errorText: {
-    color: '#B42318',
+    color: '#C43D44',
     fontSize: 14,
     lineHeight: 20,
+  },
+  footer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  footerText: {
+    fontSize: 14,
+    color: '#5F746B',
   },
 });

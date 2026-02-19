@@ -2,8 +2,9 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useCallback, useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 
+import { ScreenShell } from '@/components/screen-shell';
 import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
+import { Layout } from '@/constants/theme';
 import { useAuth } from '@/contexts/auth-context';
 import {
   createNutritionLog,
@@ -124,17 +125,23 @@ export default function NutritionScreen() {
   }
 
   return (
-    <ThemedView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.content}>
+    <ScreenShell keyboardAware scroll={false} contentContainerStyle={styles.content}>
+      <ScrollView
+        contentContainerStyle={styles.scrollStack}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
+        showsVerticalScrollIndicator={false}>
         <ThemedText type="title">Nutrition</ThemedText>
-        <ThemedText style={styles.description}>Log meals and track your daily macro intake.</ThemedText>
+        <ThemedText style={styles.description}>
+          Build accurate meal history, improve consistency, and sharpen AI recommendations.
+        </ThemedText>
 
         <View style={styles.card}>
           <ThemedText type="defaultSemiBold">Add meal log</ThemedText>
           <TextInput
             testID="nutrition-meal-type-input"
             placeholder="Meal type (e.g. Breakfast)"
-            placeholderTextColor="#7E8A96"
+            placeholderTextColor="#82958D"
             style={styles.input}
             value={mealType}
             onChangeText={setMealType}
@@ -142,7 +149,7 @@ export default function NutritionScreen() {
           <TextInput
             testID="nutrition-food-name-input"
             placeholder="Food name"
-            placeholderTextColor="#7E8A96"
+            placeholderTextColor="#82958D"
             style={styles.input}
             value={foodName}
             onChangeText={setFoodName}
@@ -151,7 +158,7 @@ export default function NutritionScreen() {
             testID="nutrition-calories-input"
             keyboardType="number-pad"
             placeholder="Calories"
-            placeholderTextColor="#7E8A96"
+            placeholderTextColor="#82958D"
             style={styles.input}
             value={calories}
             onChangeText={setCalories}
@@ -161,7 +168,7 @@ export default function NutritionScreen() {
               testID="nutrition-protein-input"
               keyboardType="number-pad"
               placeholder="Protein (g)"
-              placeholderTextColor="#7E8A96"
+              placeholderTextColor="#82958D"
               style={[styles.input, styles.macroInput]}
               value={proteinGrams}
               onChangeText={setProteinGrams}
@@ -170,7 +177,7 @@ export default function NutritionScreen() {
               testID="nutrition-carbs-input"
               keyboardType="number-pad"
               placeholder="Carbs (g)"
-              placeholderTextColor="#7E8A96"
+              placeholderTextColor="#82958D"
               style={[styles.input, styles.macroInput]}
               value={carbsGrams}
               onChangeText={setCarbsGrams}
@@ -179,7 +186,7 @@ export default function NutritionScreen() {
               testID="nutrition-fat-input"
               keyboardType="number-pad"
               placeholder="Fat (g)"
-              placeholderTextColor="#7E8A96"
+              placeholderTextColor="#82958D"
               style={[styles.input, styles.macroInput]}
               value={fatGrams}
               onChangeText={setFatGrams}
@@ -189,7 +196,7 @@ export default function NutritionScreen() {
             testID="nutrition-date-input"
             autoCapitalize="none"
             placeholder="Date (YYYY-MM-DD)"
-            placeholderTextColor="#7E8A96"
+            placeholderTextColor="#82958D"
             style={styles.input}
             value={loggedDate}
             onChangeText={setLoggedDate}
@@ -197,7 +204,7 @@ export default function NutritionScreen() {
           <TextInput
             testID="nutrition-notes-input"
             placeholder="Notes (optional)"
-            placeholderTextColor="#7E8A96"
+            placeholderTextColor="#82958D"
             style={[styles.input, styles.notesInput]}
             value={notes}
             onChangeText={setNotes}
@@ -205,7 +212,11 @@ export default function NutritionScreen() {
           />
           <Pressable
             testID="nutrition-save-button"
-            style={[styles.primaryButton, !canSubmit && styles.buttonDisabled]}
+            style={({ pressed }) => [
+              styles.primaryButton,
+              !canSubmit && styles.buttonDisabled,
+              pressed && canSubmit && styles.buttonPressed,
+            ]}
             disabled={!canSubmit}
             onPress={handleCreateLog}>
             <ThemedText style={styles.primaryButtonText}>{isSaving ? 'Saving...' : 'Save meal log'}</ThemedText>
@@ -230,48 +241,49 @@ export default function NutritionScreen() {
                 <ThemedText>{formatDate(entry.loggedAt)}</ThemedText>
                 {entry.notes ? <ThemedText>{entry.notes}</ThemedText> : null}
               </View>
-              <Pressable style={styles.deleteButton} onPress={() => handleDeleteLog(entry.id)}>
+              <Pressable
+                style={({ pressed }) => [styles.deleteButton, pressed && styles.deleteButtonPressed]}
+                onPress={() => handleDeleteLog(entry.id)}>
                 <ThemedText style={styles.deleteButtonText}>Delete</ThemedText>
               </Pressable>
             </View>
           ))}
         </View>
       </ScrollView>
-    </ThemedView>
+    </ScreenShell>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    paddingTop: 56,
-  },
   content: {
-    paddingHorizontal: 20,
-    paddingBottom: 24,
+    paddingBottom: 18,
+  },
+  scrollStack: {
     gap: 14,
   },
   description: {
-    fontSize: 16,
-    lineHeight: 24,
+    fontSize: 15,
+    lineHeight: 23,
+    color: '#577168',
   },
   card: {
     borderWidth: 1,
-    borderColor: '#D3DAE1',
-    borderRadius: 12,
+    borderColor: '#D2E2DA',
+    borderRadius: Layout.radius.md,
     paddingHorizontal: 14,
     paddingVertical: 12,
     backgroundColor: '#FFFFFF',
     gap: 8,
+    ...Layout.shadow.card,
   },
   input: {
     borderWidth: 1,
-    borderColor: '#D3DAE1',
-    borderRadius: 10,
+    borderColor: '#C5DCD1',
+    borderRadius: 12,
     paddingHorizontal: 14,
     paddingVertical: 10,
     fontSize: 16,
-    color: '#11181C',
+    color: '#0F201A',
     backgroundColor: '#FFFFFF',
   },
   macroRow: {
@@ -286,22 +298,25 @@ const styles = StyleSheet.create({
     textAlignVertical: 'top',
   },
   primaryButton: {
-    backgroundColor: '#0A7EA4',
-    borderRadius: 10,
-    paddingVertical: 11,
+    backgroundColor: '#0B8A73',
+    borderRadius: 12,
+    paddingVertical: 12,
     alignItems: 'center',
     marginTop: 4,
+  },
+  buttonPressed: {
+    transform: [{ scale: 0.985 }],
   },
   primaryButtonText: {
     color: '#FFFFFF',
     fontWeight: '600',
   },
   buttonDisabled: {
-    opacity: 0.45,
+    opacity: 0.48,
   },
   entryRow: {
     borderTopWidth: 1,
-    borderTopColor: '#E2E8EE',
+    borderTopColor: '#E1ECE7',
     paddingTop: 10,
     gap: 10,
   },
@@ -311,18 +326,21 @@ const styles = StyleSheet.create({
   deleteButton: {
     alignSelf: 'flex-start',
     borderWidth: 1,
-    borderColor: '#E2B8B8',
+    borderColor: '#F0BFC4',
     borderRadius: 8,
     paddingVertical: 6,
     paddingHorizontal: 10,
-    backgroundColor: '#FFF2F2',
+    backgroundColor: '#FFF1F3',
+  },
+  deleteButtonPressed: {
+    opacity: 0.84,
   },
   deleteButtonText: {
-    color: '#9A2020',
+    color: '#B5353E',
     fontWeight: '600',
   },
   errorText: {
-    color: '#B42318',
+    color: '#C43D44',
     fontSize: 14,
     lineHeight: 20,
   },

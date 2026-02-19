@@ -2,8 +2,9 @@ import { Link } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 
+import { ScreenShell } from '@/components/screen-shell';
 import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
+import { Layout } from '@/constants/theme';
 import { useAuth } from '@/contexts/auth-context';
 
 export default function SignUpScreen() {
@@ -41,142 +42,203 @@ export default function SignUpScreen() {
   }
 
   return (
-    <ThemedView style={styles.container}>
-      <ThemedText type="title">Create account</ThemedText>
-      <ThemedText type="subtitle" style={styles.subtitle}>
-        Start your secure fitness journey
-      </ThemedText>
-
-      <View style={styles.form}>
-        <TextInput
-          testID="sign-up-email-input"
-          autoCapitalize="none"
-          keyboardType="email-address"
-          placeholder="Email"
-          placeholderTextColor="#7E8A96"
-          style={styles.input}
-          value={email}
-          onChangeText={setEmail}
-        />
-        <TextInput
-          testID="sign-up-password-input"
-          secureTextEntry
-          placeholder="Password"
-          placeholderTextColor="#7E8A96"
-          style={styles.input}
-          value={password}
-          onChangeText={setPassword}
-        />
-        <TextInput
-          testID="sign-up-confirm-password-input"
-          secureTextEntry
-          placeholder="Confirm password"
-          placeholderTextColor="#7E8A96"
-          style={styles.input}
-          value={confirmPassword}
-          onChangeText={setConfirmPassword}
-        />
-
-        <Pressable
-          testID="sign-up-consent-toggle"
-          style={styles.consentRow}
-          onPress={() => setConsentAccepted((current) => !current)}>
-          <View style={[styles.consentBox, consentAccepted && styles.consentBoxChecked]} />
-          <ThemedText style={styles.consentText}>
-            I agree to data collection and usage for tracking, reminders, and personalization.
-          </ThemedText>
-        </Pressable>
-
-        {submitError ? <ThemedText style={styles.errorText}>{submitError}</ThemedText> : null}
-
-        <Pressable
-          testID="sign-up-submit-button"
-          style={[styles.button, !canSubmit && styles.buttonDisabled]}
-          disabled={!canSubmit}
-          onPress={handleSignUp}>
-          <ThemedText style={styles.buttonText}>
-            {isSubmitting ? 'Creating account...' : 'Create Account'}
-          </ThemedText>
-        </Pressable>
+    <ScreenShell
+      keyboardAware
+      keyboardShouldPersistTaps="always"
+      contentContainerStyle={styles.content}
+      maxWidth={580}>
+      <View style={styles.hero}>
+        <ThemedText type="title">Create account</ThemedText>
+        <ThemedText style={styles.tagline}>
+          Start your secure fitness journey with private-by-default tracking.
+        </ThemedText>
       </View>
 
-      <Link testID="sign-up-sign-in-link" href="/(auth)/sign-in" style={styles.link}>
-        <ThemedText type="link">Already have an account? Sign in</ThemedText>
-      </Link>
-    </ThemedView>
+      <View style={styles.formCard}>
+        <ThemedText type="subtitle" style={styles.subtitle}>
+          Get started in under a minute
+        </ThemedText>
+        <View style={styles.form}>
+          <TextInput
+            testID="sign-up-email-input"
+            autoCapitalize="none"
+            autoCorrect={false}
+            keyboardType="email-address"
+            textContentType="emailAddress"
+            autoComplete="email"
+            returnKeyType="next"
+            placeholder="Email"
+            placeholderTextColor="#82958D"
+            style={styles.input}
+            value={email}
+            onChangeText={setEmail}
+          />
+          <TextInput
+            testID="sign-up-password-input"
+            secureTextEntry
+            textContentType="newPassword"
+            autoComplete="new-password"
+            returnKeyType="next"
+            placeholder="Password"
+            placeholderTextColor="#82958D"
+            style={styles.input}
+            value={password}
+            onChangeText={setPassword}
+          />
+          <TextInput
+            testID="sign-up-confirm-password-input"
+            secureTextEntry
+            textContentType="password"
+            autoComplete="new-password"
+            returnKeyType="done"
+            placeholder="Confirm password"
+            placeholderTextColor="#82958D"
+            style={styles.input}
+            value={confirmPassword}
+            onChangeText={setConfirmPassword}
+          />
+
+          <Pressable
+            testID="sign-up-consent-toggle"
+            style={({ pressed }) => [styles.consentRow, pressed && styles.consentRowPressed]}
+            onPress={() => setConsentAccepted((current) => !current)}>
+            <View style={[styles.consentBox, consentAccepted && styles.consentBoxChecked]} />
+            <ThemedText style={styles.consentText}>
+              I agree to data collection and usage for tracking, reminders, and personalization.
+            </ThemedText>
+          </Pressable>
+
+          {submitError ? <ThemedText style={styles.errorText}>{submitError}</ThemedText> : null}
+
+          <Pressable
+            testID="sign-up-submit-button"
+            style={({ pressed }) => [
+              styles.button,
+              !canSubmit && styles.buttonDisabled,
+              pressed && canSubmit && styles.buttonPressed,
+            ]}
+            disabled={!canSubmit}
+            onPress={handleSignUp}>
+            <ThemedText style={styles.buttonText}>
+              {isSubmitting ? 'Creating account...' : 'Create Account'}
+            </ThemedText>
+          </Pressable>
+        </View>
+      </View>
+
+      <View style={styles.footer}>
+        <ThemedText style={styles.footerText}>Already registered?</ThemedText>
+        <Link testID="sign-up-sign-in-link" href="/(auth)/sign-in" style={styles.link}>
+          <ThemedText type="link">Sign in</ThemedText>
+        </Link>
+      </View>
+    </ScreenShell>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
+  content: {
+    flexGrow: 1,
     justifyContent: 'center',
-    paddingHorizontal: 24,
+    gap: 18,
+  },
+  hero: {
+    gap: 8,
+  },
+  tagline: {
+    fontSize: 16,
+    lineHeight: 24,
+    color: '#50635B',
+  },
+  formCard: {
+    borderRadius: Layout.radius.lg,
+    borderWidth: 1,
+    borderColor: '#D0E2D9',
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 18,
+    paddingVertical: 18,
     gap: 10,
+    ...Layout.shadow.card,
   },
   subtitle: {
-    fontSize: 20,
-    marginBottom: 10,
+    fontSize: 22,
   },
   form: {
     gap: 12,
-    marginTop: 8,
+    marginTop: 2,
   },
   input: {
     borderWidth: 1,
-    borderColor: '#D3DAE1',
-    borderRadius: 10,
+    borderColor: '#C5DCD1',
+    borderRadius: 12,
     paddingHorizontal: 14,
     paddingVertical: 12,
     fontSize: 16,
-    color: '#11181C',
+    color: '#0F201A',
     backgroundColor: '#FFFFFF',
   },
   button: {
-    backgroundColor: '#0A7EA4',
-    borderRadius: 10,
-    paddingVertical: 12,
+    backgroundColor: '#0B8A73',
+    borderRadius: 12,
+    paddingVertical: 13,
     alignItems: 'center',
+    minHeight: 50,
+    justifyContent: 'center',
     marginTop: 6,
   },
+  buttonPressed: {
+    transform: [{ scale: 0.985 }],
+  },
   buttonDisabled: {
-    opacity: 0.45,
+    opacity: 0.48,
   },
   buttonText: {
     color: '#FFFFFF',
     fontWeight: '600',
   },
   errorText: {
-    color: '#B42318',
+    color: '#C43D44',
     fontSize: 14,
     lineHeight: 20,
   },
   consentRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    gap: 10,
+    gap: 12,
     marginTop: 2,
   },
+  consentRowPressed: {
+    opacity: 0.86,
+  },
   consentBox: {
-    width: 18,
-    height: 18,
+    width: 20,
+    height: 20,
     borderWidth: 1,
-    borderColor: '#A6B4C0',
-    borderRadius: 4,
+    borderColor: '#9FB8AD',
+    borderRadius: 6,
     marginTop: 2,
     backgroundColor: '#FFFFFF',
   },
   consentBoxChecked: {
-    backgroundColor: '#0A7EA4',
-    borderColor: '#0A7EA4',
+    backgroundColor: '#0B8A73',
+    borderColor: '#0B8A73',
   },
   consentText: {
     flex: 1,
-    fontSize: 13,
-    lineHeight: 18,
+    fontSize: 14,
+    lineHeight: 20,
+    color: '#5F746B',
+  },
+  footer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  footerText: {
+    fontSize: 14,
+    color: '#5F746B',
   },
   link: {
-    marginTop: 14,
     alignSelf: 'flex-start',
   },
 });

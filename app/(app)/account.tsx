@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 
+import { ScreenShell } from '@/components/screen-shell';
 import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
+import { Layout } from '@/constants/theme';
 import { useAuth } from '@/contexts/auth-context';
 
 export default function AccountScreen() {
@@ -180,9 +181,16 @@ export default function AccountScreen() {
   }
 
   return (
-    <ThemedView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.content}>
+    <ScreenShell keyboardAware scroll={false} contentContainerStyle={styles.content}>
+      <ScrollView
+        contentContainerStyle={styles.scrollStack}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
+        showsVerticalScrollIndicator={false}>
         <ThemedText type="title">Account</ThemedText>
+        <ThemedText style={styles.subtitle}>
+          Manage security, personalization, and data controls from one place.
+        </ThemedText>
 
         <View style={styles.card}>
           <ThemedText type="defaultSemiBold">Email</ThemedText>
@@ -201,13 +209,17 @@ export default function AccountScreen() {
               <TextInput
                 secureTextEntry
                 placeholder="Account password"
-                placeholderTextColor="#7E8A96"
+                placeholderTextColor="#82958D"
                 style={styles.input}
                 value={disablePassword}
                 onChangeText={setDisablePassword}
               />
               <Pressable
-                style={[styles.secondaryButton, !canDisable && styles.buttonDisabled]}
+                style={({ pressed }) => [
+                  styles.secondaryButton,
+                  !canDisable && styles.buttonDisabled,
+                  pressed && canDisable && styles.buttonPressed,
+                ]}
                 onPress={handleDisableTwoFactor}
                 disabled={!canDisable}>
                 <ThemedText style={styles.secondaryButtonText}>
@@ -218,7 +230,10 @@ export default function AccountScreen() {
           ) : (
             <>
               {!setupKey ? (
-                <Pressable style={styles.secondaryButton} onPress={handleSetupTwoFactor} disabled={isProcessing}>
+                <Pressable
+                  style={({ pressed }) => [styles.secondaryButton, pressed && styles.buttonPressed]}
+                  onPress={handleSetupTwoFactor}
+                  disabled={isProcessing}>
                   <ThemedText style={styles.secondaryButtonText}>
                     {isProcessing ? 'Starting...' : 'Set up 2FA'}
                   </ThemedText>
@@ -236,13 +251,17 @@ export default function AccountScreen() {
                     autoCapitalize="none"
                     keyboardType="number-pad"
                     placeholder="6-digit code"
-                    placeholderTextColor="#7E8A96"
+                    placeholderTextColor="#82958D"
                     style={styles.input}
                     value={verificationCode}
                     onChangeText={setVerificationCode}
                   />
                   <Pressable
-                    style={[styles.secondaryButton, !canVerifySetup && styles.buttonDisabled]}
+                    style={({ pressed }) => [
+                      styles.secondaryButton,
+                      !canVerifySetup && styles.buttonDisabled,
+                      pressed && canVerifySetup && styles.buttonPressed,
+                    ]}
                     onPress={handleEnableTwoFactor}
                     disabled={!canVerifySetup}>
                     <ThemedText style={styles.secondaryButtonText}>
@@ -280,7 +299,7 @@ export default function AccountScreen() {
           </ThemedText>
           <Pressable
             testID="ai-insights-toggle-button"
-            style={styles.secondaryButton}
+            style={({ pressed }) => [styles.secondaryButton, pressed && styles.buttonPressed]}
             onPress={handleToggleAiInsights}
             disabled={isAiProcessing}>
             <ThemedText style={styles.secondaryButtonText}>
@@ -297,7 +316,7 @@ export default function AccountScreen() {
           </ThemedText>
           <Pressable
             testID="reminders-toggle-button"
-            style={styles.secondaryButton}
+            style={({ pressed }) => [styles.secondaryButton, pressed && styles.buttonPressed]}
             onPress={() => setRemindersEnabled((current) => !current)}>
             <ThemedText style={styles.secondaryButtonText}>
               {remindersEnabled ? 'Disable reminders' : 'Enable reminders'}
@@ -307,7 +326,7 @@ export default function AccountScreen() {
             testID="meal-reminder-time-input"
             autoCapitalize="none"
             placeholder="Meal reminder (HH:mm)"
-            placeholderTextColor="#7E8A96"
+            placeholderTextColor="#82958D"
             style={styles.input}
             value={mealReminderTime}
             onChangeText={setMealReminderTime}
@@ -316,7 +335,7 @@ export default function AccountScreen() {
             testID="workout-reminder-time-input"
             autoCapitalize="none"
             placeholder="Workout reminder (HH:mm)"
-            placeholderTextColor="#7E8A96"
+            placeholderTextColor="#82958D"
             style={styles.input}
             value={workoutReminderTime}
             onChangeText={setWorkoutReminderTime}
@@ -325,14 +344,18 @@ export default function AccountScreen() {
             testID="reminder-timezone-input"
             autoCapitalize="none"
             placeholder="Timezone (e.g. Africa/Nairobi)"
-            placeholderTextColor="#7E8A96"
+            placeholderTextColor="#82958D"
             style={styles.input}
             value={reminderTimezone}
             onChangeText={setReminderTimezone}
           />
           <Pressable
             testID="save-reminders-button"
-            style={[styles.secondaryButton, !canSaveReminders && styles.buttonDisabled]}
+            style={({ pressed }) => [
+              styles.secondaryButton,
+              !canSaveReminders && styles.buttonDisabled,
+              pressed && canSaveReminders && styles.buttonPressed,
+            ]}
             onPress={handleSaveReminderSettings}
             disabled={!canSaveReminders}>
             <ThemedText style={styles.secondaryButtonText}>
@@ -347,7 +370,9 @@ export default function AccountScreen() {
           <ThemedText style={styles.helperText}>
             You can review stored usage counts and delete your account data at any time.
           </ThemedText>
-          <Pressable style={styles.secondaryButton} onPress={handleLoadPrivacySummary}>
+          <Pressable
+            style={({ pressed }) => [styles.secondaryButton, pressed && styles.buttonPressed]}
+            onPress={handleLoadPrivacySummary}>
             <ThemedText style={styles.secondaryButtonText}>Load data summary</ThemedText>
           </Pressable>
           {privacySummary ? (
@@ -362,14 +387,18 @@ export default function AccountScreen() {
             testID="delete-account-password-input"
             secureTextEntry
             placeholder="Confirm password to delete account"
-            placeholderTextColor="#7E8A96"
+            placeholderTextColor="#82958D"
             style={styles.input}
             value={deletePassword}
             onChangeText={setDeletePassword}
           />
           <Pressable
             testID="delete-account-button"
-            style={[styles.dangerButton, !canDeleteAccount && styles.buttonDisabled]}
+            style={({ pressed }) => [
+              styles.dangerButton,
+              !canDeleteAccount && styles.buttonDisabled,
+              pressed && canDeleteAccount && styles.buttonPressed,
+            ]}
             onPress={handleDeleteAccount}
             disabled={!canDeleteAccount}>
             <ThemedText style={styles.dangerButtonText}>
@@ -379,74 +408,84 @@ export default function AccountScreen() {
           {deleteError ? <ThemedText style={styles.errorText}>{deleteError}</ThemedText> : null}
         </View>
 
-        <Pressable testID="sign-out-button" style={styles.button} onPress={handleSignOut}>
+        <Pressable
+          testID="sign-out-button"
+          style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}
+          onPress={handleSignOut}>
           <ThemedText style={styles.buttonText}>Sign Out</ThemedText>
         </Pressable>
       </ScrollView>
-    </ThemedView>
+    </ScreenShell>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    paddingTop: 56,
-  },
   content: {
-    paddingHorizontal: 20,
-    gap: 18,
-    paddingBottom: 24,
+    paddingBottom: 18,
+  },
+  scrollStack: {
+    gap: 16,
+  },
+  subtitle: {
+    fontSize: 15,
+    lineHeight: 23,
+    color: '#577168',
   },
   card: {
     borderWidth: 1,
-    borderColor: '#D3DAE1',
-    borderRadius: 12,
+    borderColor: '#D2E2DA',
+    borderRadius: Layout.radius.md,
     paddingHorizontal: 14,
     paddingVertical: 12,
     backgroundColor: '#FFFFFF',
     gap: 8,
+    ...Layout.shadow.card,
   },
   button: {
-    backgroundColor: '#0A7EA4',
-    borderRadius: 10,
+    backgroundColor: '#0B8A73',
+    borderRadius: 12,
     paddingVertical: 12,
     alignItems: 'center',
-    width: 160,
+    width: 180,
   },
   buttonText: {
     color: '#FFFFFF',
     fontWeight: '600',
   },
   secondaryButton: {
-    borderRadius: 10,
+    borderRadius: 12,
     paddingVertical: 10,
-    paddingHorizontal: 12,
+    paddingHorizontal: 13,
     alignItems: 'center',
-    backgroundColor: '#EEF5F8',
+    backgroundColor: '#EDF8F3',
     borderWidth: 1,
-    borderColor: '#B8D2DE',
+    borderColor: '#BCDCCF',
     alignSelf: 'flex-start',
   },
   secondaryButtonText: {
-    color: '#0A7EA4',
+    color: '#0B8A73',
     fontWeight: '600',
   },
+  buttonPressed: {
+    transform: [{ scale: 0.985 }],
+  },
   buttonDisabled: {
-    opacity: 0.45,
+    opacity: 0.48,
   },
   input: {
     borderWidth: 1,
-    borderColor: '#D3DAE1',
-    borderRadius: 10,
+    borderColor: '#C5DCD1',
+    borderRadius: 12,
     paddingHorizontal: 14,
     paddingVertical: 12,
     fontSize: 16,
-    color: '#11181C',
+    color: '#0F201A',
     backgroundColor: '#FFFFFF',
   },
   helperText: {
     fontSize: 14,
     lineHeight: 20,
+    color: '#577168',
   },
   monoText: {
     fontSize: 14,
@@ -461,7 +500,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   errorText: {
-    color: '#B42318',
+    color: '#C43D44',
     fontSize: 14,
     lineHeight: 20,
   },
@@ -469,17 +508,17 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   dangerButton: {
-    borderRadius: 10,
+    borderRadius: 12,
     paddingVertical: 10,
-    paddingHorizontal: 12,
+    paddingHorizontal: 13,
     alignItems: 'center',
-    backgroundColor: '#FFF2F2',
+    backgroundColor: '#FFF1F3',
     borderWidth: 1,
-    borderColor: '#F2B8B5',
+    borderColor: '#F0BFC4',
     alignSelf: 'flex-start',
   },
   dangerButtonText: {
-    color: '#B42318',
+    color: '#B5353E',
     fontWeight: '600',
   },
 });

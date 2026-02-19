@@ -1,32 +1,32 @@
-appId: com.kimxons.VigilFit
+appId: com.hello.VigilFit
 ---
 - launchApp
 - assertVisible: "Sign in to your account"
 - tapOn:
-    id: "sign-in-email-input"
+      id: "sign-in-email-input"
 - inputText: "e2e.mobile@vigilfit.test"
 - tapOn:
-    id: "sign-in-password-input"
+      id: "sign-in-password-input"
 - inputText: "Password1234"
 - hideKeyboard
 - tapOn:
-    id: "sign-in-submit-button"
+      id: "sign-in-submit-button"
 - assertVisible:
-    id: "dashboard-title"
+      id: "dashboard-title"
 
 - tapOn: "Account"
 - assertVisible: "AI insights and reminders"
 - tapOn:
-    id: "ai-insights-toggle-button"
+      id: "ai-insights-toggle-button"
 - assertVisible: "Disable AI insights"
 
 - tapOn: "Dashboard"
 - assertVisible:
-    id: "dashboard-ai-card"
+      id: "dashboard-ai-card"
 - assertVisible: "AI insights and reminders"
 - assertVisible: "not medical advice"
 
 - tapOn: "Account"
 - tapOn:
-    id: "sign-out-button"
+      id: "sign-out-button"
 - assertVisible: "Sign in to your account"

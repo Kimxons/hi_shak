@@ -2,8 +2,9 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useCallback, useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 
+import { ScreenShell } from '@/components/screen-shell';
 import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
+import { Layout } from '@/constants/theme';
 import { useAuth } from '@/contexts/auth-context';
 import { createWorkout, deleteWorkout, fetchWorkouts, type WorkoutEntry } from '@/services/fitness-api';
 
@@ -109,17 +110,23 @@ export default function WorkoutsScreen() {
   }
 
   return (
-    <ThemedView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.content}>
+    <ScreenShell keyboardAware scroll={false} contentContainerStyle={styles.content}>
+      <ScrollView
+        contentContainerStyle={styles.scrollStack}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
+        showsVerticalScrollIndicator={false}>
         <ThemedText type="title">Workouts</ThemedText>
-        <ThemedText style={styles.description}>Track sessions and review your recent training history.</ThemedText>
+        <ThemedText style={styles.description}>
+          Track sessions, spot momentum, and keep your plan realistic and repeatable.
+        </ThemedText>
 
         <View style={styles.card}>
           <ThemedText type="defaultSemiBold">Add workout</ThemedText>
           <TextInput
             testID="workout-type-input"
             placeholder="Workout type (e.g. Strength)"
-            placeholderTextColor="#7E8A96"
+            placeholderTextColor="#82958D"
             style={styles.input}
             value={workoutType}
             onChangeText={setWorkoutType}
@@ -128,7 +135,7 @@ export default function WorkoutsScreen() {
             testID="workout-duration-input"
             keyboardType="number-pad"
             placeholder="Duration in minutes"
-            placeholderTextColor="#7E8A96"
+            placeholderTextColor="#82958D"
             style={styles.input}
             value={durationMinutes}
             onChangeText={setDurationMinutes}
@@ -137,7 +144,7 @@ export default function WorkoutsScreen() {
             testID="workout-calories-input"
             keyboardType="number-pad"
             placeholder="Calories burned (optional)"
-            placeholderTextColor="#7E8A96"
+            placeholderTextColor="#82958D"
             style={styles.input}
             value={caloriesBurned}
             onChangeText={setCaloriesBurned}
@@ -146,7 +153,7 @@ export default function WorkoutsScreen() {
             testID="workout-date-input"
             autoCapitalize="none"
             placeholder="Date (YYYY-MM-DD)"
-            placeholderTextColor="#7E8A96"
+            placeholderTextColor="#82958D"
             style={styles.input}
             value={performedDate}
             onChangeText={setPerformedDate}
@@ -154,7 +161,7 @@ export default function WorkoutsScreen() {
           <TextInput
             testID="workout-notes-input"
             placeholder="Notes (optional)"
-            placeholderTextColor="#7E8A96"
+            placeholderTextColor="#82958D"
             style={[styles.input, styles.notesInput]}
             value={notes}
             onChangeText={setNotes}
@@ -162,7 +169,11 @@ export default function WorkoutsScreen() {
           />
           <Pressable
             testID="workout-save-button"
-            style={[styles.primaryButton, !canSubmit && styles.buttonDisabled]}
+            style={({ pressed }) => [
+              styles.primaryButton,
+              !canSubmit && styles.buttonDisabled,
+              pressed && canSubmit && styles.buttonPressed,
+            ]}
             disabled={!canSubmit}
             onPress={handleCreateWorkout}>
             <ThemedText style={styles.primaryButtonText}>{isSaving ? 'Saving...' : 'Save workout'}</ThemedText>
@@ -184,48 +195,49 @@ export default function WorkoutsScreen() {
                 </ThemedText>
                 {entry.notes ? <ThemedText>{entry.notes}</ThemedText> : null}
               </View>
-              <Pressable style={styles.deleteButton} onPress={() => handleDeleteWorkout(entry.id)}>
+              <Pressable
+                style={({ pressed }) => [styles.deleteButton, pressed && styles.deleteButtonPressed]}
+                onPress={() => handleDeleteWorkout(entry.id)}>
                 <ThemedText style={styles.deleteButtonText}>Delete</ThemedText>
               </Pressable>
             </View>
           ))}
         </View>
       </ScrollView>
-    </ThemedView>
+    </ScreenShell>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    paddingTop: 56,
-  },
   content: {
-    paddingHorizontal: 20,
-    paddingBottom: 24,
+    paddingBottom: 18,
+  },
+  scrollStack: {
     gap: 14,
   },
   description: {
-    fontSize: 16,
-    lineHeight: 24,
+    fontSize: 15,
+    lineHeight: 23,
+    color: '#577168',
   },
   card: {
     borderWidth: 1,
-    borderColor: '#D3DAE1',
-    borderRadius: 12,
+    borderColor: '#D2E2DA',
+    borderRadius: Layout.radius.md,
     paddingHorizontal: 14,
     paddingVertical: 12,
     backgroundColor: '#FFFFFF',
     gap: 8,
+    ...Layout.shadow.card,
   },
   input: {
     borderWidth: 1,
-    borderColor: '#D3DAE1',
-    borderRadius: 10,
+    borderColor: '#C5DCD1',
+    borderRadius: 12,
     paddingHorizontal: 14,
     paddingVertical: 10,
     fontSize: 16,
-    color: '#11181C',
+    color: '#0F201A',
     backgroundColor: '#FFFFFF',
   },
   notesInput: {
@@ -233,22 +245,25 @@ const styles = StyleSheet.create({
     textAlignVertical: 'top',
   },
   primaryButton: {
-    backgroundColor: '#0A7EA4',
-    borderRadius: 10,
-    paddingVertical: 11,
+    backgroundColor: '#0B8A73',
+    borderRadius: 12,
+    paddingVertical: 12,
     alignItems: 'center',
     marginTop: 4,
+  },
+  buttonPressed: {
+    transform: [{ scale: 0.985 }],
   },
   primaryButtonText: {
     color: '#FFFFFF',
     fontWeight: '600',
   },
   buttonDisabled: {
-    opacity: 0.45,
+    opacity: 0.48,
   },
   entryRow: {
     borderTopWidth: 1,
-    borderTopColor: '#E2E8EE',
+    borderTopColor: '#E1ECE7',
     paddingTop: 10,
     gap: 10,
   },
@@ -258,18 +273,21 @@ const styles = StyleSheet.create({
   deleteButton: {
     alignSelf: 'flex-start',
     borderWidth: 1,
-    borderColor: '#E2B8B8',
+    borderColor: '#F0BFC4',
     borderRadius: 8,
     paddingVertical: 6,
     paddingHorizontal: 10,
-    backgroundColor: '#FFF2F2',
+    backgroundColor: '#FFF1F3',
+  },
+  deleteButtonPressed: {
+    opacity: 0.84,
   },
   deleteButtonText: {
-    color: '#9A2020',
+    color: '#B5353E',
     fontWeight: '600',
   },
   errorText: {
-    color: '#B42318',
+    color: '#C43D44',
     fontSize: 14,
     lineHeight: 20,
   },

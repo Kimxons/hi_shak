@@ -2,8 +2,9 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useCallback, useMemo, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
+import { ScreenShell } from '@/components/screen-shell';
 import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
+import { Layout } from '@/constants/theme';
 import { useAuth } from '@/contexts/auth-context';
 import { fetchNutritionLogs, fetchWorkouts } from '@/services/fitness-api';
 
@@ -104,30 +105,32 @@ export default function DashboardScreen() {
   );
 
   return (
-    <ThemedView style={styles.container}>
+    <ScreenShell contentContainerStyle={styles.content}>
       <ThemedText testID="dashboard-title" type="title">
         Dashboard
       </ThemedText>
-      <ThemedText style={styles.welcome}>Welcome back, {user?.email ?? 'Athlete'}.</ThemedText>
+      <ThemedText style={styles.welcome}>
+        Welcome back, {user?.email ?? 'Athlete'}. Stay consistent and let your next win compound.
+      </ThemedText>
 
       {error ? <ThemedText style={styles.errorText}>{error}</ThemedText> : null}
 
       <View style={styles.grid}>
-        <View style={styles.card}>
+        <View style={styles.metricCard}>
           <ThemedText type="defaultSemiBold">Workouts this week</ThemedText>
           <ThemedText style={styles.metric}>{workoutsThisWeek}</ThemedText>
         </View>
-        <View style={styles.card}>
+        <View style={styles.metricCard}>
           <ThemedText type="defaultSemiBold">Meals logged today</ThemedText>
           <ThemedText style={styles.metric}>{mealsToday}</ThemedText>
         </View>
-        <View style={styles.card}>
+        <View style={styles.metricCard}>
           <ThemedText type="defaultSemiBold">Calories today</ThemedText>
           <ThemedText style={styles.metric}>{caloriesToday}</ThemedText>
         </View>
       </View>
 
-      <View testID="dashboard-ai-card" style={styles.card}>
+      <View testID="dashboard-ai-card" style={styles.featureCard}>
         <ThemedText type="defaultSemiBold">AI insights and reminders</ThemedText>
         {!user?.aiInsightsEnabled ? (
           <ThemedText>Enable AI insights in Account to receive personalized recommendations.</ThemedText>
@@ -150,7 +153,7 @@ export default function DashboardScreen() {
         ) : null}
       </View>
 
-      <View style={styles.card}>
+      <View style={styles.featureCard}>
         <ThemedText type="defaultSemiBold">Reminder notifications</ThemedText>
         {reminderError ? <ThemedText style={styles.errorText}>{reminderError}</ThemedText> : null}
         {reminderMessage ? <ThemedText>{reminderMessage}</ThemedText> : null}
@@ -167,40 +170,51 @@ export default function DashboardScreen() {
           </View>
         ))}
       </View>
-    </ThemedView>
+    </ScreenShell>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    paddingHorizontal: 20,
-    paddingTop: 56,
-    gap: 18,
+  content: {
+    gap: 16,
+    paddingBottom: 14,
   },
   welcome: {
-    fontSize: 17,
+    fontSize: 15,
+    lineHeight: 23,
+    color: '#577168',
   },
   grid: {
-    gap: 12,
+    gap: 10,
   },
-  card: {
+  metricCard: {
     borderWidth: 1,
-    borderColor: '#D3DAE1',
-    borderRadius: 12,
+    borderColor: '#D2E2DA',
+    borderRadius: Layout.radius.md,
     paddingHorizontal: 14,
     paddingVertical: 12,
     backgroundColor: '#FFFFFF',
     gap: 6,
+    ...Layout.shadow.card,
+  },
+  featureCard: {
+    borderWidth: 1,
+    borderColor: '#D2E2DA',
+    borderRadius: Layout.radius.md,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    backgroundColor: '#FFFFFF',
+    gap: 8,
+    ...Layout.shadow.card,
   },
   metric: {
-    fontSize: 30,
-    lineHeight: 34,
+    fontSize: 34,
+    lineHeight: 38,
     fontWeight: '700',
-    color: '#0A7EA4',
+    color: '#0B8A73',
   },
   errorText: {
-    color: '#B42318',
+    color: '#C43D44',
     fontSize: 14,
     lineHeight: 20,
   },
@@ -213,6 +227,6 @@ const styles = StyleSheet.create({
   disclaimerText: {
     fontSize: 12,
     lineHeight: 18,
-    color: '#5D6C77',
+    color: '#667F75',
   },
 });
