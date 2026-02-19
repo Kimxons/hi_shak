@@ -1,115 +1,112 @@
 # VigilFit
 
-VigilFit is a secure AI-assisted fitness tracking application built with Expo/React Native.
+VigilFit is a secure AI-assisted fitness tracking app built with Expo/React Native (mobile client) and Node.js/Express + MongoDB (backend API).
 
-Project scope and milestones are defined from the proposal document in `docs/proposal-alignment.md`.
+## Implementation status
 
-## Objectives
+- Secure auth: register/login, bcrypt password hashing, JWT sessions.
+- Two-factor auth (TOTP): setup, login challenge, recovery codes, disable flow.
+- Fitness logging: workout and nutrition CRUD APIs with mobile create/list/delete flows.
+- AI + reminders: explicit opt-in, generated recommendations, reminder preferences, daily prompts.
+- Privacy controls: consent at signup, privacy policy endpoint, user data summary, account deletion.
+- Automated validation: backend integration tests + Maestro mobile E2E flows.
 
-- Build secure user authentication with hashed passwords.
-- Add two-factor authentication (2FA) for account protection.
-- Implement workout tracking and food logging.
-- Provide AI-assisted reminders and personalized recommendations.
-- Validate usability, functionality, and security through testing.
+Use the final-round checklist at `docs/final-implementation-checklist.md`.
 
-## Development setup
+## Architecture
+
+- Mobile app: Expo Router, React Native, SecureStore token persistence.
+- API server: Express 5 in `backend/server.js`.
+- Database: MongoDB via Mongoose models in `backend/models`.
+- Test stack:
+  - API integration tests: `backend/tests/api.integration.test.js`
+  - Mobile E2E tests: `e2e/maestro/*.yaml`
+
+## Quick start
 
 1. Install dependencies.
-
    ```bash
    npm install
    ```
-
-2. Create environment variables.
-
+2. Create local environment config.
    ```bash
    copy .env.example .env
    ```
-
-3. Start MongoDB (local service or Docker) and ensure `MONGODB_URI` is reachable.
-
-4. Start the backend auth API.
-
+3. Update `.env` values (especially `JWT_SECRET`, `MONGODB_URI`, `EXPO_PUBLIC_API_URL`).
+4. Start backend API.
    ```bash
    npm run api
    ```
-
-5. Start the app in a second terminal.
-
+   If Atlas/local Mongo is unavailable, use in-memory mode:
+   ```bash
+   npm run api:memory
+   ```
+5. Start app in another terminal.
    ```bash
    npx expo start
    ```
 
-6. Run lint checks.
+Detailed configuration guide: `docs/configuration-guide.md`.
 
-   ```bash
-   npm run lint
-   ```
+## Environment variables
 
-7. Run backend integration tests.
+| Variable | Required | Purpose |
+|---|---|---|
+| `AUTH_API_PORT` | Yes | Backend API port (`4000` default). |
+| `JWT_SECRET` | Yes | JWT signing key; set a long random value. |
+| `MONGODB_URI` | Yes | MongoDB connection URI with explicit database name. |
+| `TOTP_ISSUER` | Yes | Label shown in authenticator apps during 2FA setup. |
+| `EXPO_PUBLIC_API_URL` | Yes | Mobile app API base URL. |
+| `E2E_MOBILE_EMAIL` | Optional | Seeded mobile E2E account email. |
+| `E2E_MOBILE_PASSWORD` | Optional | Seeded mobile E2E account password. |
 
-   ```bash
-   npm run test:api
-   ```
-
-8. Run mobile end-to-end UI tests (requires Maestro and an emulator/device).
-
-   ```bash
-   npm run test:e2e:mobile
-   ```
-
-## Auth API
-
-- Base URL is read from `EXPO_PUBLIC_API_URL`.
-- MongoDB connection is read from `MONGODB_URI`.
-- TOTP issuer label is read from `TOTP_ISSUER`.
-- Backend routes:
-  - `GET /privacy/policy`
-  - `POST /auth/register`
-  - `POST /auth/login`
-  - `POST /auth/2fa/verify-login`
-  - `GET /auth/me` (Bearer token required)
-  - `POST /auth/2fa/setup` (Bearer token required)
-  - `POST /auth/2fa/verify-enable` (Bearer token required)
-  - `POST /auth/2fa/disable` (Bearer token required)
-  - `GET /workouts` (Bearer token required)
-  - `POST /workouts` (Bearer token required)
-  - `PUT /workouts/:workoutId` (Bearer token required)
-  - `DELETE /workouts/:workoutId` (Bearer token required)
-  - `GET /nutrition/logs` (Bearer token required)
-  - `POST /nutrition/logs` (Bearer token required)
-  - `PUT /nutrition/logs/:logId` (Bearer token required)
-  - `DELETE /nutrition/logs/:logId` (Bearer token required)
-  - `GET /reminders/preferences` (Bearer token required)
-  - `PUT /reminders/preferences` (Bearer token required)
-  - `GET /reminders/today` (Bearer token required)
-  - `GET /privacy/data-summary` (Bearer token required)
-  - `DELETE /privacy/account` (Bearer token required)
-  - `PUT /ai/preferences` (Bearer token required)
-  - `GET /ai/recommendations` (Bearer token required, AI opt-in required)
-- Passwords are hashed with `bcrypt`.
-- Sessions use signed JWT tokens.
-- Two-factor auth uses TOTP with one-time recovery codes.
-- Account creation requires explicit privacy/data usage consent.
-
-## MongoDB Atlas URI format
-
-Use a URI with an explicit database name:
+Example Atlas URI:
 
 ```env
 MONGODB_URI=mongodb+srv://<username>:<url_encoded_password>@<cluster-host>/vigilfit?retryWrites=true&w=majority&appName=Cluster0
 ```
 
-Notes:
-- Replace `<url_encoded_password>` with your real password (URL-encode special characters).
-- Do not leave placeholder values like `<db_password>`.
+## Validation commands
 
-## Project docs
+- Lint:
+  ```bash
+  npm run lint
+  ```
+- Type check:
+  ```bash
+  npx tsc --noEmit
+  ```
+- Backend integration tests:
+  ```bash
+  npm run test:api
+  ```
+- Full submission validation (lint + typecheck + API tests):
+  ```bash
+  npm run validate:submission
+  ```
+- Mobile E2E suite (requires Maestro + emulator/device):
+  ```bash
+  npm run test:e2e:mobile
+  ```
 
-- Proposal alignment and phased plan: `docs/proposal-alignment.md`
-- Existing fitness app constraint analysis: `docs/existing-fitness-app-analysis.md`
+## API surface
+
+- Auth: `/auth/register`, `/auth/login`, `/auth/me`, `/auth/2fa/*`
+- Fitness logs: `/workouts`, `/nutrition/logs`
+- AI: `/ai/preferences`, `/ai/recommendations`
+- Reminders: `/reminders/preferences`, `/reminders/today`
+- Privacy: `/privacy/policy`, `/privacy/data-summary`, `/privacy/account`
+
+See `backend/server.js` for full request/response behavior.
+
+## Project documentation
+
+- Proposal alignment: `docs/proposal-alignment.md`
+- Existing app analysis: `docs/existing-fitness-app-analysis.md`
+- Configuration guide: `docs/configuration-guide.md`
+- Final implementation checklist: `docs/final-implementation-checklist.md`
 - Validation report: `docs/validation-report.md`
 - Supervisor sign-off checklist: `docs/supervisor-signoff-checklist.md`
-- Submission and deployment notes: `docs/submission-deployment-notes.md`
-- Mobile E2E test guide: `e2e/maestro/README.md`
-# hi_shak
+- Usability evaluation template: `docs/usability-evaluation-template.md`
+- Submission/deployment notes: `docs/submission-deployment-notes.md`
+- Mobile E2E guide: `e2e/maestro/README.md`

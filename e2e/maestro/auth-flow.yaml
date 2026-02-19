@@ -1,0 +1,21 @@
+appId: com.kimxons.VigilFit
+---
+- launchApp:
+    clearState: true
+- assertVisible: "Sign in to your account"
+- tapOn:
+    id: "sign-in-email-input"
+- inputText: "e2e.mobile@vigilfit.test"
+- tapOn:
+    id: "sign-in-password-input"
+- inputText: "Password1234"
+- hideKeyboard
+- tapOn:
+    id: "sign-in-submit-button"
+- assertVisible:
+    id: "dashboard-title"
+- tapOn: "Account"
+- assertVisible: "Account"
+- tapOn:
+    id: "sign-out-button"
+- assertVisible: "Sign in to your account"
