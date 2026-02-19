@@ -7,6 +7,26 @@ import 'react-native-reanimated';
 import { AuthProvider, useAuth } from '@/contexts/auth-context';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
+const POINTER_EVENTS_DEPRECATION_WARNING = 'props.pointerEvents is deprecated. Use style.pointerEvents';
+
+if (__DEV__) {
+  const globalRef = globalThis as { __vigilfitConsoleWarnPatched?: boolean };
+
+  if (!globalRef.__vigilfitConsoleWarnPatched) {
+    globalRef.__vigilfitConsoleWarnPatched = true;
+    const originalWarn = console.warn.bind(console);
+
+    console.warn = (...args: Parameters<typeof console.warn>) => {
+      const firstArg = args[0];
+      if (typeof firstArg === 'string' && firstArg.includes(POINTER_EVENTS_DEPRECATION_WARNING)) {
+        return;
+      }
+
+      originalWarn(...args);
+    };
+  }
+}
+
 function AuthGate() {
   const { isAuthenticated, isLoadingSession } = useAuth();
   const segments = useSegments();
