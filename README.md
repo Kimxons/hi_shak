@@ -40,7 +40,7 @@ Use the final-round checklist at `docs/final-implementation-checklist.md`.
    If Atlas/local Mongo is unavailable, use in-memory mode:
    ```bash
    npm run api:memory
-   ```
+   ```ap
 5. Start app in another terminal.
    ```bash
    npx expo start

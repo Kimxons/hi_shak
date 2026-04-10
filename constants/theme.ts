@@ -6,9 +6,9 @@ const primaryDark = '#4DE3C6';
 export const Colors = {
   light: {
     text: '#0F201A',
-    background: '#F4FAF7',
+    background: '#FFFFFF',
     surface: '#FFFFFF',
-    elevated: '#EBF6F1',
+    elevated: '#F0F7F3',
     border: '#D1E3DA',
     mutedText: '#5A6F66',
     primary: primaryLight,
@@ -22,9 +22,9 @@ export const Colors = {
   },
   dark: {
     text: '#EDF7F2',
-    background: '#0F1714',
-    surface: '#17231E',
-    elevated: '#1E2D27',
+    background: '#1A2723',
+    surface: '#1F2C27',
+    elevated: '#252F2A',
     border: '#2B3D36',
     mutedText: '#A7BBB2',
     primary: primaryDark,

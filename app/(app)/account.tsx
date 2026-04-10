@@ -41,6 +41,7 @@ export default function AccountScreen() {
   const [deletePassword, setDeletePassword] = useState('');
   const [isDeleteProcessing, setIsDeleteProcessing] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [isRemovingRecoveryCodes, setIsRemovingRecoveryCodes] = useState(false);
 
   const twoFactorEnabled = Boolean(user?.twoFactorEnabled);
   const canVerifySetup = useMemo(
@@ -180,6 +181,15 @@ export default function AccountScreen() {
     }
   }
 
+  async function handleRemoveRecoveryCodes() {
+    setIsRemovingRecoveryCodes(true);
+    try {
+      setRecoveryCodes(null);
+    } finally {
+      setIsRemovingRecoveryCodes(false);
+    }
+  }
+
   return (
     <ScreenShell keyboardAware scroll={false} contentContainerStyle={styles.content}>
       <ScrollView
@@ -278,7 +288,20 @@ export default function AccountScreen() {
 
         {recoveryCodes ? (
           <View style={styles.card}>
-            <ThemedText type="defaultSemiBold">Recovery codes</ThemedText>
+            <View style={styles.recoveryCodesHeader}>
+              <ThemedText type="defaultSemiBold">Recovery codes</ThemedText>
+              <Pressable
+                style={({ pressed }) => [
+                  styles.removeCodesButton,
+                  pressed && styles.buttonPressed,
+                ]}
+                onPress={handleRemoveRecoveryCodes}
+                disabled={isRemovingRecoveryCodes}>
+                <ThemedText style={styles.removeCodesButtonText}>
+                  {isRemovingRecoveryCodes ? 'Removing...' : 'Clear'}
+                </ThemedText>
+              </Pressable>
+            </View>
             <ThemedText style={styles.helperText}>
               Save these codes now. Each code can be used once if you lose access to your authenticator app.
             </ThemedText>
@@ -520,5 +543,23 @@ const styles = StyleSheet.create({
   dangerButtonText: {
     color: '#B5353E',
     fontWeight: '600',
+  },
+  recoveryCodesHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  removeCodesButton: {
+    borderRadius: 8,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    backgroundColor: '#FFF1F3',
+    borderWidth: 1,
+    borderColor: '#F0BFC4',
+  },
+  removeCodesButtonText: {
+    color: '#B5353E',
+    fontWeight: '600',
+    fontSize: 12,
   },
 });
