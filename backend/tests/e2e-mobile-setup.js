@@ -35,7 +35,6 @@ async function main() {
       twoFactorEnabled: false,
       twoFactorSecret: null,
       twoFactorTempSecret: null,
-      twoFactorRecoveryCodes: [],
       aiInsightsEnabled: false,
       privacyConsentAcceptedAt: new Date(),
       privacyConsentVersion: '1.0',
@@ -49,7 +48,6 @@ async function main() {
     user.twoFactorEnabled = false;
     user.twoFactorSecret = null;
     user.twoFactorTempSecret = null;
-    user.twoFactorRecoveryCodes = [];
     user.aiInsightsEnabled = false;
     user.privacyConsentAcceptedAt = user.privacyConsentAcceptedAt || new Date();
     user.privacyConsentVersion = '1.0';
@@ -70,6 +68,6 @@ async function main() {
 
 main().catch(async (error) => {
   console.error(error.message);
-  await mongoose.disconnect().catch(() => {});
+  await mongoose.disconnect().catch(() => { });
   process.exit(1);
 });

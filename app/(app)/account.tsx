@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
+import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 
 import { ScreenShell } from '@/components/screen-shell';
 import { ThemedText } from '@/components/themed-text';
@@ -23,7 +23,6 @@ export default function AccountScreen() {
   const [setupOtpAuthUrl, setSetupOtpAuthUrl] = useState<string | null>(null);
   const [verificationCode, setVerificationCode] = useState('');
   const [disablePassword, setDisablePassword] = useState('');
-  const [recoveryCodes, setRecoveryCodes] = useState<string[] | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [twoFactorError, setTwoFactorError] = useState<string | null>(null);
   const [isAiProcessing, setIsAiProcessing] = useState(false);
@@ -41,14 +40,16 @@ export default function AccountScreen() {
   const [deletePassword, setDeletePassword] = useState('');
   const [isDeleteProcessing, setIsDeleteProcessing] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
-  const [isRemovingRecoveryCodes, setIsRemovingRecoveryCodes] = useState(false);
 
   const twoFactorEnabled = Boolean(user?.twoFactorEnabled);
   const canVerifySetup = useMemo(
     () => Boolean(setupKey) && verificationCode.trim().length === 6 && !isProcessing,
     [setupKey, verificationCode, isProcessing]
   );
-  const canDisable = useMemo(() => disablePassword.trim().length >= 8 && !isProcessing, [disablePassword, isProcessing]);
+  const canDisable = useMemo(
+    () => disablePassword.trim().length >= 8 && !isProcessing,
+    [disablePassword, isProcessing]
+  );
   const aiEnabled = Boolean(user?.aiInsightsEnabled);
   const canSaveReminders = useMemo(
     () =>
@@ -81,7 +82,6 @@ export default function AccountScreen() {
   async function handleSetupTwoFactor() {
     setTwoFactorError(null);
     setIsProcessing(true);
-    setRecoveryCodes(null);
 
     try {
       const response = await beginTwoFactorSetup();
@@ -99,8 +99,7 @@ export default function AccountScreen() {
     setIsProcessing(true);
 
     try {
-      const response = await confirmTwoFactorSetup(verificationCode.trim());
-      setRecoveryCodes(response.recoveryCodes);
+      await confirmTwoFactorSetup(verificationCode.trim());
       setSetupKey(null);
       setSetupOtpAuthUrl(null);
       setVerificationCode('');
@@ -118,7 +117,6 @@ export default function AccountScreen() {
     try {
       await disableTwoFactorAuth(disablePassword);
       setDisablePassword('');
-      setRecoveryCodes(null);
     } catch (error) {
       setTwoFactorError(error instanceof Error ? error.message : 'Unable to disable 2FA.');
     } finally {
@@ -181,273 +179,229 @@ export default function AccountScreen() {
     }
   }
 
-  async function handleRemoveRecoveryCodes() {
-    setIsRemovingRecoveryCodes(true);
-    try {
-      setRecoveryCodes(null);
-    } finally {
-      setIsRemovingRecoveryCodes(false);
-    }
-  }
-
   return (
-    <ScreenShell keyboardAware scroll={false} contentContainerStyle={styles.content}>
-      <ScrollView
-        contentContainerStyle={styles.scrollStack}
-        keyboardShouldPersistTaps="handled"
-        keyboardDismissMode="on-drag"
-        showsVerticalScrollIndicator={false}>
-        <ThemedText type="title">Account</ThemedText>
-        <ThemedText style={styles.subtitle}>
-          Manage security, personalization, and data controls from one place.
-        </ThemedText>
+    <ScreenShell keyboardAware contentContainerStyle={styles.content}>
+      <ThemedText type="title">Account</ThemedText>
+      <ThemedText style={styles.subtitle}>
+        Manage security, personalization, and data controls from one place.
+      </ThemedText>
 
-        <View style={styles.card}>
-          <ThemedText type="defaultSemiBold">Email</ThemedText>
-          <ThemedText>{user?.email ?? 'Not available'}</ThemedText>
-        </View>
+      <View style={styles.card}>
+        <ThemedText type="defaultSemiBold">Email</ThemedText>
+        <ThemedText>{user?.email ?? 'Not available'}</ThemedText>
+      </View>
 
-        <View style={styles.card}>
-          <ThemedText type="defaultSemiBold">Two-factor authentication</ThemedText>
-          <ThemedText>{twoFactorEnabled ? 'Enabled' : 'Disabled'}</ThemedText>
+      <View style={styles.card}>
+        <ThemedText type="defaultSemiBold">Two-factor authentication</ThemedText>
+        <ThemedText>{twoFactorEnabled ? 'Enabled' : 'Disabled'}</ThemedText>
 
-          {twoFactorEnabled ? (
-            <>
-              <ThemedText style={styles.helperText}>
-                Disable 2FA by confirming your password.
+        {twoFactorEnabled ? (
+          <>
+            <ThemedText style={styles.helperText}>
+              Disable 2FA by confirming your password.
+            </ThemedText>
+            <TextInput
+              secureTextEntry
+              placeholder="Account password"
+              placeholderTextColor="#82958D"
+              style={styles.input}
+              value={disablePassword}
+              onChangeText={setDisablePassword}
+            />
+            <Pressable
+              style={({ pressed }) => [
+                styles.secondaryButton,
+                !canDisable && styles.buttonDisabled,
+                pressed && canDisable && styles.buttonPressed,
+              ]}
+              onPress={handleDisableTwoFactor}
+              disabled={!canDisable}>
+              <ThemedText style={styles.secondaryButtonText}>
+                {isProcessing ? 'Disabling...' : 'Disable 2FA'}
               </ThemedText>
-              <TextInput
-                secureTextEntry
-                placeholder="Account password"
-                placeholderTextColor="#82958D"
-                style={styles.input}
-                value={disablePassword}
-                onChangeText={setDisablePassword}
-              />
+            </Pressable>
+          </>
+        ) : (
+          <>
+            {!setupKey ? (
               <Pressable
-                style={({ pressed }) => [
-                  styles.secondaryButton,
-                  !canDisable && styles.buttonDisabled,
-                  pressed && canDisable && styles.buttonPressed,
-                ]}
-                onPress={handleDisableTwoFactor}
-                disabled={!canDisable}>
+                style={({ pressed }) => [styles.secondaryButton, pressed && styles.buttonPressed]}
+                onPress={handleSetupTwoFactor}
+                disabled={isProcessing}>
                 <ThemedText style={styles.secondaryButtonText}>
-                  {isProcessing ? 'Disabling...' : 'Disable 2FA'}
+                  {isProcessing ? 'Starting...' : 'Set up 2FA'}
                 </ThemedText>
               </Pressable>
-            </>
-          ) : (
-            <>
-              {!setupKey ? (
+            ) : (
+              <View style={styles.setupPanel}>
+                <ThemedText type="defaultSemiBold">Manual entry key</ThemedText>
+                <ThemedText style={styles.monoText}>{setupKey}</ThemedText>
+                <ThemedText type="defaultSemiBold">OTP URI</ThemedText>
+                <ThemedText style={styles.uriText}>{setupOtpAuthUrl}</ThemedText>
+                <ThemedText style={styles.helperText}>
+                  Add the key to your authenticator app, then enter the 6-digit code.
+                </ThemedText>
+                <TextInput
+                  autoCapitalize="none"
+                  keyboardType="number-pad"
+                  placeholder="6-digit code"
+                  placeholderTextColor="#82958D"
+                  style={styles.input}
+                  value={verificationCode}
+                  onChangeText={setVerificationCode}
+                />
                 <Pressable
-                  style={({ pressed }) => [styles.secondaryButton, pressed && styles.buttonPressed]}
-                  onPress={handleSetupTwoFactor}
-                  disabled={isProcessing}>
+                  style={({ pressed }) => [
+                    styles.secondaryButton,
+                    !canVerifySetup && styles.buttonDisabled,
+                    pressed && canVerifySetup && styles.buttonPressed,
+                  ]}
+                  onPress={handleEnableTwoFactor}
+                  disabled={!canVerifySetup}>
                   <ThemedText style={styles.secondaryButtonText}>
-                    {isProcessing ? 'Starting...' : 'Set up 2FA'}
+                    {isProcessing ? 'Verifying...' : 'Enable 2FA'}
                   </ThemedText>
                 </Pressable>
-              ) : (
-                <View style={styles.setupPanel}>
-                  <ThemedText type="defaultSemiBold">Manual entry key</ThemedText>
-                  <ThemedText style={styles.monoText}>{setupKey}</ThemedText>
-                  <ThemedText type="defaultSemiBold">OTP URI</ThemedText>
-                  <ThemedText style={styles.uriText}>{setupOtpAuthUrl}</ThemedText>
-                  <ThemedText style={styles.helperText}>
-                    Add the key to your authenticator app, then enter the 6-digit code.
-                  </ThemedText>
-                  <TextInput
-                    autoCapitalize="none"
-                    keyboardType="number-pad"
-                    placeholder="6-digit code"
-                    placeholderTextColor="#82958D"
-                    style={styles.input}
-                    value={verificationCode}
-                    onChangeText={setVerificationCode}
-                  />
-                  <Pressable
-                    style={({ pressed }) => [
-                      styles.secondaryButton,
-                      !canVerifySetup && styles.buttonDisabled,
-                      pressed && canVerifySetup && styles.buttonPressed,
-                    ]}
-                    onPress={handleEnableTwoFactor}
-                    disabled={!canVerifySetup}>
-                    <ThemedText style={styles.secondaryButtonText}>
-                      {isProcessing ? 'Verifying...' : 'Enable 2FA'}
-                    </ThemedText>
-                  </Pressable>
-                </View>
-              )}
-            </>
-          )}
+              </View>
+            )}
+          </>
+        )}
 
-          {twoFactorError ? <ThemedText style={styles.errorText}>{twoFactorError}</ThemedText> : null}
-        </View>
+        {twoFactorError ? <ThemedText style={styles.errorText}>{twoFactorError}</ThemedText> : null}
+      </View>
 
-        {recoveryCodes ? (
-          <View style={styles.card}>
-            <View style={styles.recoveryCodesHeader}>
-              <ThemedText type="defaultSemiBold">Recovery codes</ThemedText>
-              <Pressable
-                style={({ pressed }) => [
-                  styles.removeCodesButton,
-                  pressed && styles.buttonPressed,
-                ]}
-                onPress={handleRemoveRecoveryCodes}
-                disabled={isRemovingRecoveryCodes}>
-                <ThemedText style={styles.removeCodesButtonText}>
-                  {isRemovingRecoveryCodes ? 'Removing...' : 'Clear'}
-                </ThemedText>
-              </Pressable>
-            </View>
-            <ThemedText style={styles.helperText}>
-              Save these codes now. Each code can be used once if you lose access to your authenticator app.
-            </ThemedText>
-            {recoveryCodes.map((code) => (
-              <ThemedText key={code} style={styles.monoText}>
-                {code}
-              </ThemedText>
-            ))}
+      <View style={styles.card}>
+        <ThemedText type="defaultSemiBold">AI insights and reminders</ThemedText>
+        <ThemedText>{aiEnabled ? 'Enabled' : 'Disabled'}</ThemedText>
+        <ThemedText style={styles.helperText}>
+          When enabled, VigilFit analyzes your workout and food logs to generate supportive reminders
+          and personalized recommendations. This feature does not provide medical advice.
+        </ThemedText>
+        <Pressable
+          testID="ai-insights-toggle-button"
+          style={({ pressed }) => [styles.secondaryButton, pressed && styles.buttonPressed]}
+          onPress={handleToggleAiInsights}
+          disabled={isAiProcessing}>
+          <ThemedText style={styles.secondaryButtonText}>
+            {isAiProcessing ? 'Updating...' : aiEnabled ? 'Disable AI insights' : 'Enable AI insights'}
+          </ThemedText>
+        </Pressable>
+        {aiError ? <ThemedText style={styles.errorText}>{aiError}</ThemedText> : null}
+      </View>
+
+      <View style={styles.card}>
+        <ThemedText type="defaultSemiBold">Reminder preferences</ThemedText>
+        <ThemedText style={styles.helperText}>
+          Configure reminder prompts for meal logging and workout consistency.
+        </ThemedText>
+        <Pressable
+          testID="reminders-toggle-button"
+          style={({ pressed }) => [styles.secondaryButton, pressed && styles.buttonPressed]}
+          onPress={() => setRemindersEnabled((current) => !current)}>
+          <ThemedText style={styles.secondaryButtonText}>
+            {remindersEnabled ? 'Disable reminders' : 'Enable reminders'}
+          </ThemedText>
+        </Pressable>
+        <TextInput
+          testID="meal-reminder-time-input"
+          autoCapitalize="none"
+          placeholder="Meal reminder (HH:mm)"
+          placeholderTextColor="#82958D"
+          style={styles.input}
+          value={mealReminderTime}
+          onChangeText={setMealReminderTime}
+        />
+        <TextInput
+          testID="workout-reminder-time-input"
+          autoCapitalize="none"
+          placeholder="Workout reminder (HH:mm)"
+          placeholderTextColor="#82958D"
+          style={styles.input}
+          value={workoutReminderTime}
+          onChangeText={setWorkoutReminderTime}
+        />
+        <TextInput
+          testID="reminder-timezone-input"
+          autoCapitalize="none"
+          placeholder="Timezone (e.g. Africa/Nairobi)"
+          placeholderTextColor="#82958D"
+          style={styles.input}
+          value={reminderTimezone}
+          onChangeText={setReminderTimezone}
+        />
+        <Pressable
+          testID="save-reminders-button"
+          style={({ pressed }) => [
+            styles.secondaryButton,
+            !canSaveReminders && styles.buttonDisabled,
+            pressed && canSaveReminders && styles.buttonPressed,
+          ]}
+          onPress={handleSaveReminderSettings}
+          disabled={!canSaveReminders}>
+          <ThemedText style={styles.secondaryButtonText}>
+            {isReminderProcessing ? 'Saving...' : 'Save reminder settings'}
+          </ThemedText>
+        </Pressable>
+        {reminderError ? <ThemedText style={styles.errorText}>{reminderError}</ThemedText> : null}
+      </View>
+
+      <View style={styles.card}>
+        <ThemedText type="defaultSemiBold">Privacy and data minimization</ThemedText>
+        <ThemedText style={styles.helperText}>
+          You can review stored usage counts and delete your account data at any time.
+        </ThemedText>
+        <Pressable
+          style={({ pressed }) => [styles.secondaryButton, pressed && styles.buttonPressed]}
+          onPress={handleLoadPrivacySummary}>
+          <ThemedText style={styles.secondaryButtonText}>Load data summary</ThemedText>
+        </Pressable>
+        {privacySummary ? (
+          <View style={styles.summaryBlock}>
+            <ThemedText>Workouts stored: {privacySummary.workouts}</ThemedText>
+            <ThemedText>Nutrition logs stored: {privacySummary.nutritionLogs}</ThemedText>
           </View>
         ) : null}
+        {privacySummaryError ? <ThemedText style={styles.errorText}>{privacySummaryError}</ThemedText> : null}
 
-        <View style={styles.card}>
-          <ThemedText type="defaultSemiBold">AI insights and reminders</ThemedText>
-          <ThemedText>{aiEnabled ? 'Enabled' : 'Disabled'}</ThemedText>
-          <ThemedText style={styles.helperText}>
-            When enabled, VigilFit analyzes your workout and food logs to generate supportive reminders
-            and personalized recommendations. This feature does not provide medical advice.
-          </ThemedText>
-          <Pressable
-            testID="ai-insights-toggle-button"
-            style={({ pressed }) => [styles.secondaryButton, pressed && styles.buttonPressed]}
-            onPress={handleToggleAiInsights}
-            disabled={isAiProcessing}>
-            <ThemedText style={styles.secondaryButtonText}>
-              {isAiProcessing ? 'Updating...' : aiEnabled ? 'Disable AI insights' : 'Enable AI insights'}
-            </ThemedText>
-          </Pressable>
-          {aiError ? <ThemedText style={styles.errorText}>{aiError}</ThemedText> : null}
-        </View>
-
-        <View style={styles.card}>
-          <ThemedText type="defaultSemiBold">Reminder preferences</ThemedText>
-          <ThemedText style={styles.helperText}>
-            Configure reminder prompts for meal logging and workout consistency.
-          </ThemedText>
-          <Pressable
-            testID="reminders-toggle-button"
-            style={({ pressed }) => [styles.secondaryButton, pressed && styles.buttonPressed]}
-            onPress={() => setRemindersEnabled((current) => !current)}>
-            <ThemedText style={styles.secondaryButtonText}>
-              {remindersEnabled ? 'Disable reminders' : 'Enable reminders'}
-            </ThemedText>
-          </Pressable>
-          <TextInput
-            testID="meal-reminder-time-input"
-            autoCapitalize="none"
-            placeholder="Meal reminder (HH:mm)"
-            placeholderTextColor="#82958D"
-            style={styles.input}
-            value={mealReminderTime}
-            onChangeText={setMealReminderTime}
-          />
-          <TextInput
-            testID="workout-reminder-time-input"
-            autoCapitalize="none"
-            placeholder="Workout reminder (HH:mm)"
-            placeholderTextColor="#82958D"
-            style={styles.input}
-            value={workoutReminderTime}
-            onChangeText={setWorkoutReminderTime}
-          />
-          <TextInput
-            testID="reminder-timezone-input"
-            autoCapitalize="none"
-            placeholder="Timezone (e.g. Africa/Nairobi)"
-            placeholderTextColor="#82958D"
-            style={styles.input}
-            value={reminderTimezone}
-            onChangeText={setReminderTimezone}
-          />
-          <Pressable
-            testID="save-reminders-button"
-            style={({ pressed }) => [
-              styles.secondaryButton,
-              !canSaveReminders && styles.buttonDisabled,
-              pressed && canSaveReminders && styles.buttonPressed,
-            ]}
-            onPress={handleSaveReminderSettings}
-            disabled={!canSaveReminders}>
-            <ThemedText style={styles.secondaryButtonText}>
-              {isReminderProcessing ? 'Saving...' : 'Save reminder settings'}
-            </ThemedText>
-          </Pressable>
-          {reminderError ? <ThemedText style={styles.errorText}>{reminderError}</ThemedText> : null}
-        </View>
-
-        <View style={styles.card}>
-          <ThemedText type="defaultSemiBold">Privacy and data minimization</ThemedText>
-          <ThemedText style={styles.helperText}>
-            You can review stored usage counts and delete your account data at any time.
-          </ThemedText>
-          <Pressable
-            style={({ pressed }) => [styles.secondaryButton, pressed && styles.buttonPressed]}
-            onPress={handleLoadPrivacySummary}>
-            <ThemedText style={styles.secondaryButtonText}>Load data summary</ThemedText>
-          </Pressable>
-          {privacySummary ? (
-            <View style={styles.summaryBlock}>
-              <ThemedText>Workouts stored: {privacySummary.workouts}</ThemedText>
-              <ThemedText>Nutrition logs stored: {privacySummary.nutritionLogs}</ThemedText>
-            </View>
-          ) : null}
-          {privacySummaryError ? <ThemedText style={styles.errorText}>{privacySummaryError}</ThemedText> : null}
-
-          <TextInput
-            testID="delete-account-password-input"
-            secureTextEntry
-            placeholder="Confirm password to delete account"
-            placeholderTextColor="#82958D"
-            style={styles.input}
-            value={deletePassword}
-            onChangeText={setDeletePassword}
-          />
-          <Pressable
-            testID="delete-account-button"
-            style={({ pressed }) => [
-              styles.dangerButton,
-              !canDeleteAccount && styles.buttonDisabled,
-              pressed && canDeleteAccount && styles.buttonPressed,
-            ]}
-            onPress={handleDeleteAccount}
-            disabled={!canDeleteAccount}>
-            <ThemedText style={styles.dangerButtonText}>
-              {isDeleteProcessing ? 'Deleting...' : 'Delete account and data'}
-            </ThemedText>
-          </Pressable>
-          {deleteError ? <ThemedText style={styles.errorText}>{deleteError}</ThemedText> : null}
-        </View>
-
+        <TextInput
+          testID="delete-account-password-input"
+          secureTextEntry
+          placeholder="Confirm password to delete account"
+          placeholderTextColor="#82958D"
+          style={styles.input}
+          value={deletePassword}
+          onChangeText={setDeletePassword}
+        />
         <Pressable
-          testID="sign-out-button"
-          style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}
-          onPress={handleSignOut}>
-          <ThemedText style={styles.buttonText}>Sign Out</ThemedText>
+          testID="delete-account-button"
+          style={({ pressed }) => [
+            styles.dangerButton,
+            !canDeleteAccount && styles.buttonDisabled,
+            pressed && canDeleteAccount && styles.buttonPressed,
+          ]}
+          onPress={handleDeleteAccount}
+          disabled={!canDeleteAccount}>
+          <ThemedText style={styles.dangerButtonText}>
+            {isDeleteProcessing ? 'Deleting...' : 'Delete account and data'}
+          </ThemedText>
         </Pressable>
-      </ScrollView>
+        {deleteError ? <ThemedText style={styles.errorText}>{deleteError}</ThemedText> : null}
+      </View>
+
+      <Pressable
+        testID="sign-out-button"
+        style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}
+        onPress={handleSignOut}>
+        <ThemedText style={styles.buttonText}>Sign Out</ThemedText>
+      </Pressable>
     </ScreenShell>
   );
 }
 
 const styles = StyleSheet.create({
   content: {
-    paddingBottom: 18,
-  },
-  scrollStack: {
     gap: 16,
+    paddingBottom: 18,
   },
   subtitle: {
     fontSize: 15,
@@ -543,23 +497,5 @@ const styles = StyleSheet.create({
   dangerButtonText: {
     color: '#B5353E',
     fontWeight: '600',
-  },
-  recoveryCodesHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  removeCodesButton: {
-    borderRadius: 8,
-    paddingVertical: 6,
-    paddingHorizontal: 10,
-    backgroundColor: '#FFF1F3',
-    borderWidth: 1,
-    borderColor: '#F0BFC4',
-  },
-  removeCodesButtonText: {
-    color: '#B5353E',
-    fontWeight: '600',
-    fontSize: 12,
   },
 });

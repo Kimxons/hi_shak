@@ -35,8 +35,6 @@ export type LoginTwoFactorChallengeResponse = {
 export type VerifyTwoFactorLoginResponse = {
   token: string;
   user: ApiUser;
-  recoveryCodeUsed: boolean;
-  remainingRecoveryCodes: number;
 };
 
 export type SetupTwoFactorResponse = {
@@ -46,7 +44,6 @@ export type SetupTwoFactorResponse = {
 
 export type VerifyEnableTwoFactorResponse = {
   user: ApiUser;
-  recoveryCodes: string[];
 };
 
 export type AiRecommendation = {

@@ -5,7 +5,7 @@ VigilFit is a secure AI-assisted fitness tracking app built with Expo/React Nati
 ## Implementation status
 
 - Secure auth: register/login, bcrypt password hashing, JWT sessions.
-- Two-factor auth (TOTP): setup, login challenge, recovery codes, disable flow.
+- Two-factor auth (TOTP): setup, login challenge, disable flow.
 - Fitness logging: workout and nutrition CRUD APIs with mobile create/list/delete flows.
 - AI + reminders: explicit opt-in, generated recommendations, reminder preferences, daily prompts.
 - Privacy controls: consent at signup, privacy policy endpoint, user data summary, account deletion.

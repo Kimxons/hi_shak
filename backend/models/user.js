@@ -26,10 +26,6 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
-    twoFactorRecoveryCodes: {
-      type: [String],
-      default: [],
-    },
     aiInsightsEnabled: {
       type: Boolean,
       default: false,

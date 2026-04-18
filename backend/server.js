@@ -5,7 +5,6 @@ const cors = require('cors');
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const speakeasy = require('speakeasy');
-const { randomBytes } = require('node:crypto');
 
 const { connectToDatabase } = require('./db');
 const { MealLog } = require('./models/meal-log');
@@ -123,33 +122,6 @@ function verifyTotpCode(secret, code) {
   });
 }
 
-function generateRecoveryCodes(count = 8) {
-  return Array.from({ length: count }, () => {
-    const value = randomBytes(4).toString('hex').toUpperCase();
-    return `${value.slice(0, 4)}-${value.slice(4)}`;
-  });
-}
-
-async function hashRecoveryCodes(codes) {
-  return Promise.all(codes.map((code) => bcrypt.hash(code, 10)));
-}
-
-async function consumeRecoveryCode(user, submittedCode) {
-  const normalized = submittedCode.toUpperCase();
-
-  for (let index = 0; index < user.twoFactorRecoveryCodes.length; index += 1) {
-    const matches = await bcrypt.compare(normalized, user.twoFactorRecoveryCodes[index]);
-
-    if (matches) {
-      user.twoFactorRecoveryCodes.splice(index, 1);
-      await user.save();
-      return true;
-    }
-  }
-
-  return false;
-}
-
 function createApp() {
   const app = express();
 
@@ -262,16 +234,7 @@ function createApp() {
       return res.status(401).json({ error: '2FA challenge is invalid or expired.' });
     }
 
-    let codeAccepted = false;
-    let recoveryCodeUsed = false;
-
-    if (/^\d{6}$/.test(normalizedCode)) {
-      codeAccepted = verifyTotpCode(user.twoFactorSecret, normalizedCode);
-    } else {
-      const used = await consumeRecoveryCode(user, normalizedCode);
-      codeAccepted = used;
-      recoveryCodeUsed = used;
-    }
+    const codeAccepted = /^\d{6}$/.test(normalizedCode) && verifyTotpCode(user.twoFactorSecret, normalizedCode);
 
     if (!codeAccepted) {
       return res.status(401).json({ error: 'Invalid authentication code.' });
@@ -281,8 +244,6 @@ function createApp() {
     return res.status(200).json({
       token,
       user: sanitize(user),
-      recoveryCodeUsed,
-      remainingRecoveryCodes: user.twoFactorRecoveryCodes.length,
     });
   });
 
@@ -392,18 +353,13 @@ function createApp() {
       return res.status(401).json({ error: 'Invalid authentication code.' });
     }
 
-    const rawRecoveryCodes = generateRecoveryCodes();
-    const hashedRecoveryCodes = await hashRecoveryCodes(rawRecoveryCodes);
-
     user.twoFactorEnabled = true;
     user.twoFactorSecret = user.twoFactorTempSecret;
     user.twoFactorTempSecret = null;
-    user.twoFactorRecoveryCodes = hashedRecoveryCodes;
     await user.save();
 
     return res.status(200).json({
       user: sanitize(user),
-      recoveryCodes: rawRecoveryCodes,
     });
   });
 
@@ -424,7 +380,6 @@ function createApp() {
     user.twoFactorEnabled = false;
     user.twoFactorSecret = null;
     user.twoFactorTempSecret = null;
-    user.twoFactorRecoveryCodes = [];
     await user.save();
 
     return res.status(200).json({ user: sanitize(user) });

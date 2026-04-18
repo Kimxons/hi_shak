@@ -50,11 +50,9 @@ async function enableTwoFactorForUser(token) {
 
   assert.equal(enableResponse.status, 200);
   assert.equal(enableResponse.body.user.twoFactorEnabled, true);
-  assert.equal(Array.isArray(enableResponse.body.recoveryCodes), true);
 
   return {
     manualEntryKey: setupResponse.body.manualEntryKey,
-    recoveryCodes: enableResponse.body.recoveryCodes,
   };
 }
 
@@ -126,8 +124,7 @@ test('2FA setup and login challenge flow works end-to-end', async () => {
   const email = uniqueEmail('twofactor');
   const registerResponse = await registerUser(email);
 
-  const { manualEntryKey, recoveryCodes } = await enableTwoFactorForUser(registerResponse.token);
-  assert.equal(recoveryCodes.length, 8);
+  const { manualEntryKey } = await enableTwoFactorForUser(registerResponse.token);
 
   const loginResponse = await request(app).post('/auth/login').send({
     email,
@@ -153,10 +150,10 @@ test('2FA setup and login challenge flow works end-to-end', async () => {
   assert.equal(verifyLoginResponse.body.user.twoFactorEnabled, true);
 });
 
-test('2FA recovery code is single-use and disable requires password confirmation', async () => {
-  const email = uniqueEmail('recover');
+test('2FA disable requires password confirmation', async () => {
+  const email = uniqueEmail('disable');
   const registerResponse = await registerUser(email);
-  const { recoveryCodes } = await enableTwoFactorForUser(registerResponse.token);
+  const { manualEntryKey } = await enableTwoFactorForUser(registerResponse.token);
 
   const loginResponse = await request(app).post('/auth/login').send({
     email,
@@ -165,37 +162,26 @@ test('2FA recovery code is single-use and disable requires password confirmation
   assert.equal(loginResponse.status, 200);
   assert.equal(loginResponse.body.requiresTwoFactor, true);
 
-  const recoveryCode = recoveryCodes[0];
-  const verifyWithRecoveryResponse = await request(app).post('/auth/2fa/verify-login').send({
+  const verifyCode = speakeasy.totp({
+    secret: manualEntryKey,
+    encoding: 'base32',
+  });
+
+  const verifyLoginResponse = await request(app).post('/auth/2fa/verify-login').send({
     challengeToken: loginResponse.body.challengeToken,
-    code: recoveryCode,
+    code: verifyCode,
   });
-  assert.equal(verifyWithRecoveryResponse.status, 200);
-  assert.equal(verifyWithRecoveryResponse.body.recoveryCodeUsed, true);
-  assert.equal(verifyWithRecoveryResponse.body.remainingRecoveryCodes, 7);
-
-  const secondChallengeResponse = await request(app).post('/auth/login').send({
-    email,
-    password: TEST_PASSWORD,
-  });
-  assert.equal(secondChallengeResponse.status, 200);
-  assert.equal(secondChallengeResponse.body.requiresTwoFactor, true);
-
-  const reusedRecoveryCodeResponse = await request(app).post('/auth/2fa/verify-login').send({
-    challengeToken: secondChallengeResponse.body.challengeToken,
-    code: recoveryCode,
-  });
-  assert.equal(reusedRecoveryCodeResponse.status, 401);
+  assert.equal(verifyLoginResponse.status, 200);
 
   const disableWithWrongPasswordResponse = await request(app)
     .post('/auth/2fa/disable')
-    .set('Authorization', `Bearer ${verifyWithRecoveryResponse.body.token}`)
+    .set('Authorization', `Bearer ${verifyLoginResponse.body.token}`)
     .send({ password: 'wrong-password' });
   assert.equal(disableWithWrongPasswordResponse.status, 401);
 
   const disableWithCorrectPasswordResponse = await request(app)
     .post('/auth/2fa/disable')
-    .set('Authorization', `Bearer ${verifyWithRecoveryResponse.body.token}`)
+    .set('Authorization', `Bearer ${verifyLoginResponse.body.token}`)
     .send({ password: TEST_PASSWORD });
   assert.equal(disableWithCorrectPasswordResponse.status, 200);
   assert.equal(disableWithCorrectPasswordResponse.body.user.twoFactorEnabled, false);

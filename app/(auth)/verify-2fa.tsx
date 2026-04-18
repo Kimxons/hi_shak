@@ -55,7 +55,7 @@ export default function VerifyTwoFactorScreen() {
         <ThemedText type="title">Two-factor verification</ThemedText>
         <ThemedText style={styles.description}>
           Enter the 6-digit code from your authenticator app
-          {pendingTwoFactorEmail ? ` for ${pendingTwoFactorEmail}` : ''}. You can also use a recovery code.
+          {pendingTwoFactorEmail ? ` for ${pendingTwoFactorEmail}` : ''}.
         </ThemedText>
       </View>
 
@@ -65,7 +65,7 @@ export default function VerifyTwoFactorScreen() {
           autoCapitalize="characters"
           autoCorrect={false}
           returnKeyType="done"
-          placeholder="123456 or ABCD-EFGH"
+          placeholder="123456"
           placeholderTextColor="#82958D"
           style={styles.input}
           value={code}
