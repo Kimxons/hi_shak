@@ -106,12 +106,17 @@ export default function DashboardScreen() {
 
   return (
     <ScreenShell contentContainerStyle={styles.content}>
-      <ThemedText testID="dashboard-title" type="title">
-        Dashboard
-      </ThemedText>
-      <ThemedText style={styles.welcome}>
-        Welcome back, {user?.email ?? 'Athlete'}. Stay consistent and let your next win compound.
-      </ThemedText>
+      <View style={styles.heroCard}>
+        <View style={styles.heroBadge}>
+          <ThemedText style={styles.heroBadgeText}>Daily overview</ThemedText>
+        </View>
+        <ThemedText testID="dashboard-title" type="title">
+          Dashboard
+        </ThemedText>
+        <ThemedText style={styles.welcome}>
+          Welcome back, {user?.email ?? 'Athlete'}. Stay consistent and let your next win compound.
+        </ThemedText>
+      </View>
 
       {error ? <ThemedText style={styles.errorText}>{error}</ThemedText> : null}
 
@@ -178,6 +183,31 @@ const styles = StyleSheet.create({
   content: {
     gap: 16,
     paddingBottom: 14,
+  },
+  heroCard: {
+    borderWidth: 1,
+    borderColor: '#D5E6DE',
+    borderRadius: Layout.radius.lg,
+    paddingHorizontal: 18,
+    paddingVertical: 18,
+    backgroundColor: 'rgba(255,255,255,0.94)',
+    gap: 10,
+    ...Layout.shadow.card,
+  },
+  heroBadge: {
+    alignSelf: 'flex-start',
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    backgroundColor: '#EAF4EF',
+  },
+  heroBadgeText: {
+    color: '#44665B',
+    fontSize: 12,
+    lineHeight: 16,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 0.6,
   },
   welcome: {
     fontSize: 15,

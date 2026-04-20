@@ -181,10 +181,15 @@ export default function AccountScreen() {
 
   return (
     <ScreenShell keyboardAware contentContainerStyle={styles.content}>
-      <ThemedText type="title">Account</ThemedText>
-      <ThemedText style={styles.subtitle}>
-        Manage security, personalization, and data controls from one place.
-      </ThemedText>
+      <View style={styles.heroCard}>
+        <View style={styles.heroBadge}>
+          <ThemedText style={styles.heroBadgeText}>Control center</ThemedText>
+        </View>
+        <ThemedText type="title">Account</ThemedText>
+        <ThemedText style={styles.subtitle}>
+          Manage security, personalization, and data controls from one place.
+        </ThemedText>
+      </View>
 
       <View style={styles.card}>
         <ThemedText type="defaultSemiBold">Email</ThemedText>
@@ -402,6 +407,31 @@ const styles = StyleSheet.create({
   content: {
     gap: 16,
     paddingBottom: 18,
+  },
+  heroCard: {
+    borderWidth: 1,
+    borderColor: '#D5E6DE',
+    borderRadius: Layout.radius.lg,
+    paddingHorizontal: 18,
+    paddingVertical: 18,
+    backgroundColor: 'rgba(255,255,255,0.94)',
+    gap: 10,
+    ...Layout.shadow.card,
+  },
+  heroBadge: {
+    alignSelf: 'flex-start',
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    backgroundColor: '#EAF4EF',
+  },
+  heroBadgeText: {
+    color: '#44665B',
+    fontSize: 12,
+    lineHeight: 16,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 0.6,
   },
   subtitle: {
     fontSize: 15,

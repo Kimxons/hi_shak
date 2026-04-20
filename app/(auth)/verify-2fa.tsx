@@ -50,7 +50,8 @@ export default function VerifyTwoFactorScreen() {
       keyboardAware
       keyboardShouldPersistTaps="always"
       contentContainerStyle={styles.content}
-      maxWidth={560}>
+      maxWidth={560}
+      centered>
       <View style={styles.hero}>
         <ThemedText type="title">Two-factor verification</ThemedText>
         <ThemedText style={styles.description}>
@@ -60,6 +61,9 @@ export default function VerifyTwoFactorScreen() {
       </View>
 
       <View style={styles.formCard}>
+        <View style={styles.badge}>
+          <ThemedText style={styles.badgeText}>Extra protection</ThemedText>
+        </View>
         <ThemedText type="defaultSemiBold">Security checkpoint</ThemedText>
         <TextInput
           autoCapitalize="characters"
@@ -98,12 +102,25 @@ export default function VerifyTwoFactorScreen() {
 
 const styles = StyleSheet.create({
   content: {
-    flexGrow: 1,
-    justifyContent: 'center',
     gap: 18,
   },
   hero: {
     gap: 10,
+  },
+  badge: {
+    alignSelf: 'flex-start',
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    backgroundColor: '#E4F6F0',
+  },
+  badgeText: {
+    color: '#0B8A73',
+    fontSize: 12,
+    lineHeight: 16,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 0.6,
   },
   description: {
     fontSize: 16,
@@ -157,6 +174,7 @@ const styles = StyleSheet.create({
   },
   footer: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     alignItems: 'center',
     gap: 8,
   },

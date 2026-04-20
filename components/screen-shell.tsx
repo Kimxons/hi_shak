@@ -25,6 +25,7 @@ type ScreenShellProps = {
   keyboardShouldPersistTaps?: ScrollViewProps['keyboardShouldPersistTaps'];
   keyboardAware?: boolean;
   maxWidth?: number;
+  centered?: boolean;
 };
 
 const AnimatedView = Animated.createAnimatedComponent(View);
@@ -37,6 +38,7 @@ export function ScreenShell({
   keyboardShouldPersistTaps = 'handled',
   keyboardAware = false,
   maxWidth = 760,
+  centered = false,
 }: ScreenShellProps) {
   const opacity = useRef(new Animated.Value(0)).current;
   const translateY = useRef(new Animated.Value(18)).current;
@@ -74,10 +76,20 @@ export function ScreenShell({
     alignSelf: 'center',
   };
 
+  const alignedContentStyle: ViewStyle = centered
+    ? {
+      flexGrow: 1,
+      justifyContent: 'center',
+    }
+    : {
+      flexGrow: 1,
+    };
+
   const content = scroll ? (
     <ScrollView
-      contentContainerStyle={[styles.scrollContent, shellPaddingStyle, contentContainerStyle]}
+      contentContainerStyle={[styles.scrollContent, alignedContentStyle, shellPaddingStyle, contentContainerStyle]}
       keyboardShouldPersistTaps={keyboardShouldPersistTaps}
+      keyboardDismissMode="on-drag"
       showsVerticalScrollIndicator={false}>
       {children}
     </ScrollView>

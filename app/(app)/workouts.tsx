@@ -1,6 +1,6 @@
 import { useFocusEffect } from '@react-navigation/native';
 import { useCallback, useMemo, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
+import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 
 import { ScreenShell } from '@/components/screen-shell';
 import { ThemedText } from '@/components/themed-text';
@@ -110,19 +110,33 @@ export default function WorkoutsScreen() {
   }
 
   return (
-    <ScreenShell keyboardAware scroll={false} contentContainerStyle={styles.content}>
-      <ScrollView
-        contentContainerStyle={styles.scrollStack}
-        keyboardShouldPersistTaps="handled"
-        keyboardDismissMode="on-drag"
-        showsVerticalScrollIndicator={false}>
+    <ScreenShell keyboardAware contentContainerStyle={styles.content}>
+      <View style={styles.heroCard}>
+        <View style={styles.heroBadge}>
+          <ThemedText style={styles.heroBadgeText}>Consistency</ThemedText>
+        </View>
         <ThemedText type="title">Workouts</ThemedText>
         <ThemedText style={styles.description}>
           Track sessions, spot momentum, and keep your plan realistic and repeatable.
         </ThemedText>
+      </View>
 
-        <View style={styles.card}>
-          <ThemedText type="defaultSemiBold">Add workout</ThemedText>
+      <View style={styles.summaryRow}>
+        <View style={styles.summaryCard}>
+          <ThemedText style={styles.summaryLabel}>Saved sessions</ThemedText>
+          <ThemedText style={styles.summaryValue}>{entries.length}</ThemedText>
+        </View>
+        <View style={styles.summaryCard}>
+          <ThemedText style={styles.summaryLabel}>Status</ThemedText>
+          <ThemedText style={styles.summaryValueSmall}>{isLoading ? 'Syncing' : 'Ready'}</ThemedText>
+        </View>
+      </View>
+
+      <View style={styles.card}>
+        <ThemedText type="defaultSemiBold">Add workout</ThemedText>
+        <ThemedText style={styles.helperText}>Log the essentials first. Notes and calories can come after.</ThemedText>
+        <View style={styles.fieldGroup}>
+          <ThemedText style={styles.fieldLabel}>Workout type</ThemedText>
           <TextInput
             testID="workout-type-input"
             placeholder="Workout type (e.g. Strength)"
@@ -131,24 +145,35 @@ export default function WorkoutsScreen() {
             value={workoutType}
             onChangeText={setWorkoutType}
           />
-          <TextInput
-            testID="workout-duration-input"
-            keyboardType="number-pad"
-            placeholder="Duration in minutes"
-            placeholderTextColor="#82958D"
-            style={styles.input}
-            value={durationMinutes}
-            onChangeText={setDurationMinutes}
-          />
-          <TextInput
-            testID="workout-calories-input"
-            keyboardType="number-pad"
-            placeholder="Calories burned (optional)"
-            placeholderTextColor="#82958D"
-            style={styles.input}
-            value={caloriesBurned}
-            onChangeText={setCaloriesBurned}
-          />
+        </View>
+        <View style={styles.inlineFields}>
+          <View style={styles.inlineField}>
+            <ThemedText style={styles.fieldLabel}>Duration</ThemedText>
+            <TextInput
+              testID="workout-duration-input"
+              keyboardType="number-pad"
+              placeholder="Duration in minutes"
+              placeholderTextColor="#82958D"
+              style={styles.input}
+              value={durationMinutes}
+              onChangeText={setDurationMinutes}
+            />
+          </View>
+          <View style={styles.inlineField}>
+            <ThemedText style={styles.fieldLabel}>Calories</ThemedText>
+            <TextInput
+              testID="workout-calories-input"
+              keyboardType="number-pad"
+              placeholder="Calories burned (optional)"
+              placeholderTextColor="#82958D"
+              style={styles.input}
+              value={caloriesBurned}
+              onChangeText={setCaloriesBurned}
+            />
+          </View>
+        </View>
+        <View style={styles.fieldGroup}>
+          <ThemedText style={styles.fieldLabel}>Date</ThemedText>
           <TextInput
             testID="workout-date-input"
             autoCapitalize="none"
@@ -158,6 +183,9 @@ export default function WorkoutsScreen() {
             value={performedDate}
             onChangeText={setPerformedDate}
           />
+        </View>
+        <View style={styles.fieldGroup}>
+          <ThemedText style={styles.fieldLabel}>Notes</ThemedText>
           <TextInput
             testID="workout-notes-input"
             placeholder="Notes (optional)"
@@ -167,33 +195,37 @@ export default function WorkoutsScreen() {
             onChangeText={setNotes}
             multiline
           />
-          <Pressable
-            testID="workout-save-button"
-            style={({ pressed }) => [
-              styles.primaryButton,
-              !canSubmit && styles.buttonDisabled,
-              pressed && canSubmit && styles.buttonPressed,
-            ]}
-            disabled={!canSubmit}
-            onPress={handleCreateWorkout}>
-            <ThemedText style={styles.primaryButtonText}>{isSaving ? 'Saving...' : 'Save workout'}</ThemedText>
-          </Pressable>
         </View>
+        <Pressable
+          testID="workout-save-button"
+          style={({ pressed }) => [
+            styles.primaryButton,
+            !canSubmit && styles.buttonDisabled,
+            pressed && canSubmit && styles.buttonPressed,
+          ]}
+          disabled={!canSubmit}
+          onPress={handleCreateWorkout}>
+          <ThemedText style={styles.primaryButtonText}>{isSaving ? 'Saving...' : 'Save workout'}</ThemedText>
+        </Pressable>
+      </View>
 
-        {error ? <ThemedText style={styles.errorText}>{error}</ThemedText> : null}
+      {error ? <ThemedText style={styles.errorText}>{error}</ThemedText> : null}
 
-        <View style={styles.card}>
+      <View style={styles.card}>
+        <View style={styles.sectionHeader}>
           <ThemedText type="defaultSemiBold">Recent workouts</ThemedText>
-          {isLoading ? <ThemedText>Loading workouts...</ThemedText> : null}
-          {!isLoading && entries.length === 0 ? <ThemedText>No workouts yet.</ThemedText> : null}
-          {entries.map((entry) => (
-            <View key={entry.id} style={styles.entryRow}>
+          <ThemedText style={styles.sectionMeta}>{entries.length} total</ThemedText>
+        </View>
+        {isLoading ? <ThemedText>Loading workouts...</ThemedText> : null}
+        {!isLoading && entries.length === 0 ? <ThemedText>No workouts yet.</ThemedText> : null}
+        {entries.map((entry) => (
+          <View key={entry.id} style={styles.entryRow}>
+            <View style={styles.entryTopRow}>
               <View style={styles.entryText}>
                 <ThemedText type="defaultSemiBold">{entry.workoutType}</ThemedText>
                 <ThemedText>
                   {entry.durationMinutes} min | {entry.caloriesBurned} kcal | {formatDate(entry.performedAt)}
                 </ThemedText>
-                {entry.notes ? <ThemedText>{entry.notes}</ThemedText> : null}
               </View>
               <Pressable
                 style={({ pressed }) => [styles.deleteButton, pressed && styles.deleteButtonPressed]}
@@ -201,24 +233,79 @@ export default function WorkoutsScreen() {
                 <ThemedText style={styles.deleteButtonText}>Delete</ThemedText>
               </Pressable>
             </View>
-          ))}
-        </View>
-      </ScrollView>
+            {entry.notes ? <ThemedText style={styles.entryNotes}>{entry.notes}</ThemedText> : null}
+          </View>
+        ))}
+      </View>
     </ScreenShell>
   );
 }
 
 const styles = StyleSheet.create({
   content: {
-    paddingBottom: 18,
-  },
-  scrollStack: {
     gap: 14,
+  },
+  heroCard: {
+    borderWidth: 1,
+    borderColor: '#D5E6DE',
+    borderRadius: Layout.radius.lg,
+    paddingHorizontal: 18,
+    paddingVertical: 18,
+    backgroundColor: 'rgba(255,255,255,0.94)',
+    gap: 10,
+    ...Layout.shadow.card,
+  },
+  heroBadge: {
+    alignSelf: 'flex-start',
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    backgroundColor: '#E4F6F0',
+  },
+  heroBadgeText: {
+    color: '#0B8A73',
+    fontSize: 12,
+    lineHeight: 16,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 0.6,
   },
   description: {
     fontSize: 15,
     lineHeight: 23,
     color: '#577168',
+  },
+  summaryRow: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  summaryCard: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: '#D2E2DA',
+    borderRadius: Layout.radius.md,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    backgroundColor: '#FFFFFF',
+    gap: 6,
+    ...Layout.shadow.card,
+  },
+  summaryLabel: {
+    fontSize: 13,
+    lineHeight: 18,
+    color: '#577168',
+  },
+  summaryValue: {
+    fontSize: 28,
+    lineHeight: 32,
+    fontWeight: '700',
+    color: '#0B8A73',
+  },
+  summaryValueSmall: {
+    fontSize: 20,
+    lineHeight: 26,
+    fontWeight: '700',
+    color: '#0F201A',
   },
   card: {
     borderWidth: 1,
@@ -229,6 +316,28 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     gap: 8,
     ...Layout.shadow.card,
+  },
+  helperText: {
+    fontSize: 14,
+    lineHeight: 20,
+    color: '#577168',
+  },
+  fieldGroup: {
+    gap: 6,
+  },
+  fieldLabel: {
+    fontSize: 13,
+    lineHeight: 18,
+    fontWeight: '600',
+    color: '#44665B',
+  },
+  inlineFields: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  inlineField: {
+    flex: 1,
+    gap: 6,
   },
   input: {
     borderWidth: 1,
@@ -261,14 +370,35 @@ const styles = StyleSheet.create({
   buttonDisabled: {
     opacity: 0.48,
   },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: 10,
+  },
+  sectionMeta: {
+    fontSize: 13,
+    lineHeight: 18,
+    color: '#577168',
+  },
   entryRow: {
     borderTopWidth: 1,
     borderTopColor: '#E1ECE7',
     paddingTop: 10,
     gap: 10,
   },
+  entryTopRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    gap: 10,
+  },
   entryText: {
+    flex: 1,
     gap: 4,
+  },
+  entryNotes: {
+    color: '#577168',
   },
   deleteButton: {
     alignSelf: 'flex-start',

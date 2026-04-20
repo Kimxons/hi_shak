@@ -46,7 +46,8 @@ export default function SignUpScreen() {
       keyboardAware
       keyboardShouldPersistTaps="always"
       contentContainerStyle={styles.content}
-      maxWidth={580}>
+      maxWidth={580}
+      centered>
       <View style={styles.hero}>
         <ThemedText type="title">Create account</ThemedText>
         <ThemedText style={styles.tagline}>
@@ -55,8 +56,14 @@ export default function SignUpScreen() {
       </View>
 
       <View style={styles.formCard}>
+        <View style={styles.badge}>
+          <ThemedText style={styles.badgeText}>Fast onboarding</ThemedText>
+        </View>
         <ThemedText type="subtitle" style={styles.subtitle}>
           Get started in under a minute
+        </ThemedText>
+        <ThemedText style={styles.helper}>
+          One account gives you secure tracking, reminders, AI insights, and full control over your data.
         </ThemedText>
         <View style={styles.form}>
           <TextInput
@@ -138,17 +145,35 @@ export default function SignUpScreen() {
 
 const styles = StyleSheet.create({
   content: {
-    flexGrow: 1,
-    justifyContent: 'center',
     gap: 18,
   },
   hero: {
     gap: 8,
   },
+  badge: {
+    alignSelf: 'flex-start',
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    backgroundColor: '#FBE8D7',
+  },
+  badgeText: {
+    color: '#A55720',
+    fontSize: 12,
+    lineHeight: 16,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 0.6,
+  },
   tagline: {
     fontSize: 16,
     lineHeight: 24,
     color: '#50635B',
+  },
+  helper: {
+    fontSize: 14,
+    lineHeight: 20,
+    color: '#5F746B',
   },
   formCard: {
     borderRadius: Layout.radius.lg,
@@ -231,6 +256,7 @@ const styles = StyleSheet.create({
   },
   footer: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     alignItems: 'center',
     gap: 8,
   },

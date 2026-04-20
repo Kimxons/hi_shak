@@ -41,7 +41,8 @@ export default function SignInScreen() {
       keyboardAware
       keyboardShouldPersistTaps="always"
       contentContainerStyle={styles.content}
-      maxWidth={560}>
+      maxWidth={560}
+      centered>
       <View style={styles.hero}>
         <ThemedText type="title">VigilFit</ThemedText>
         <ThemedText style={styles.tagline}>
@@ -50,6 +51,9 @@ export default function SignInScreen() {
       </View>
 
       <View style={styles.formCard}>
+        <View style={styles.badge}>
+          <ThemedText style={styles.badgeText}>Secure sign in</ThemedText>
+        </View>
         <ThemedText type="subtitle" style={styles.subtitle}>
           Sign in to your account
         </ThemedText>
@@ -113,12 +117,25 @@ export default function SignInScreen() {
 
 const styles = StyleSheet.create({
   content: {
-    flexGrow: 1,
-    justifyContent: 'center',
     gap: 18,
   },
   hero: {
     gap: 8,
+  },
+  badge: {
+    alignSelf: 'flex-start',
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    backgroundColor: '#E4F6F0',
+  },
+  badgeText: {
+    color: '#0B8A73',
+    fontSize: 12,
+    lineHeight: 16,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 0.6,
   },
   subtitle: {
     fontSize: 24,
@@ -183,6 +200,7 @@ const styles = StyleSheet.create({
   },
   footer: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     alignItems: 'center',
     gap: 8,
   },
